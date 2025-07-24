@@ -480,25 +480,7 @@ export default function ApplicationForm() {
                         )}
                       />
                       
-                      <FormField
-                        control={form.control}
-                        name="workspaceDescription"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Briefly describe your workspace</FormLabel>
-                            <FormControl>
-                              <Textarea 
-                                placeholder="Describe your home workspace for packaging..." 
-                                className="resize-none" 
-                                rows={3}
-                                {...field}
-                                value={field.value || ""}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                      
                     </div>
                   </TabsContent>
 
