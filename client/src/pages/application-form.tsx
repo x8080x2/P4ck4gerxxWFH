@@ -168,7 +168,6 @@ export default function ApplicationForm() {
           </div>
         </div>
       </header>
-
       {/* Professional Job Overview */}
       <section className="bg-white border-b border-neutral-200">
         <div className="container mx-auto px-6 py-8 max-w-6xl">
@@ -215,9 +214,8 @@ export default function ApplicationForm() {
           </div>
         </div>
       </section>
-
       {/* Application Form */}
-      <main className="container mx-auto px-6 py-8 max-w-4xl">
+      <main className="container mx-auto px-6 py-8 max-w-4xl pt-[40px] pb-[40px] pl-[0px] pr-[0px] ml-[123.666672px] mr-[123.666672px]">
         <Card className="shadow-lg">
           <CardHeader className="pb-4">
             <CardTitle className="text-2xl text-center text-neutral-800">Application Form</CardTitle>
@@ -663,7 +661,6 @@ export default function ApplicationForm() {
           </CardContent>
         </Card>
       </main>
-
       {/* Professional Footer */}
       <footer className="bg-neutral-900 text-white mt-12">
         <div className="container mx-auto px-6 py-8 max-w-6xl">
