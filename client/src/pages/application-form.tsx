@@ -339,10 +339,7 @@ export default function ApplicationForm() {
                                 <RadioGroupItem value="none" id="none" />
                                 <Label htmlFor="none">No previous work experience</Label>
                               </div>
-                              <div className="flex items-center space-x-2">
-                                <RadioGroupItem value="some" id="some" />
-                                <Label htmlFor="some">Some work experience (less than 2 years)</Label>
-                              </div>
+                              
                               <div className="flex items-center space-x-2">
                                 <RadioGroupItem value="experienced" id="experienced" />
                                 <Label htmlFor="experienced">Yes</Label>
