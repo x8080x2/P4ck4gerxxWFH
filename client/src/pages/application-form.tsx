@@ -387,7 +387,7 @@ export default function ApplicationForm() {
                               </div>
                               <div className="flex items-center space-x-2">
                                 <RadioGroupItem value="partial" id="training-partial" />
-                                <Label htmlFor="training-partial">I have some scheduling conflicts but can accommodate</Label>
+                                <Label htmlFor="training-partial">I have some scheduling conflicts but would love it done remotely</Label>
                               </div>
                               <div className="flex items-center space-x-2">
                                 <RadioGroupItem value="no" id="training-no" />
