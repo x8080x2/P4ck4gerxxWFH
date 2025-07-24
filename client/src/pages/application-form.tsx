@@ -215,7 +215,7 @@ export default function ApplicationForm() {
         </div>
       </section>
       {/* Application Form */}
-      <main className="container mx-auto px-6 py-8 max-w-4xl pt-[40px] pb-[40px] pl-[0px] pr-[0px] ml-[123.666672px] mr-[123.666672px]">
+      <main className="container mx-auto px-6 py-8 max-w-4xl pt-[40px] pb-[40px] pl-[0px] pr-[0px] ml-[160.6666715px] mr-[160.6666715px]">
         <Card className="shadow-lg">
           <CardHeader className="pb-4">
             <CardTitle className="text-2xl text-center text-neutral-800">Application Form</CardTitle>
