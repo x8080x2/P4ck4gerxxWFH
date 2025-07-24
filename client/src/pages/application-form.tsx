@@ -537,27 +537,7 @@ export default function ApplicationForm() {
                         )}
                       />
                       
-                      <FormField
-                        control={form.control}
-                        name="workspaceAgreement"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                            <FormControl>
-                              <Checkbox
-                                checked={field.value === "true"}
-                                onCheckedChange={(checked) => field.onChange(checked ? "true" : "false")}
-                              />
-                            </FormControl>
-                            <div className="space-y-1 leading-none">
-                              <FormLabel>Workspace Requirements <span className="text-error">*</span></FormLabel>
-                              <p className="text-sm text-neutral-600">
-                                I confirm that I have or will arrange adequate space at home for packaging work.
-                              </p>
-                            </div>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                      
                       
                       <FormField
                         control={form.control}
