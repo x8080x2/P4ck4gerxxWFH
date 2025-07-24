@@ -345,7 +345,7 @@ export default function ApplicationForm() {
                               </div>
                               <div className="flex items-center space-x-2">
                                 <RadioGroupItem value="experienced" id="experienced" />
-                                <Label htmlFor="experienced">Experienced (2+ years)</Label>
+                                <Label htmlFor="experienced">Yes</Label>
                               </div>
                             </RadioGroup>
                           </FormControl>
