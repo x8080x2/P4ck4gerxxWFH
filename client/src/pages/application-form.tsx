@@ -637,10 +637,7 @@ export default function ApplicationForm() {
                   <Mail className="h-4 w-4 text-blue-400 mr-3" />
                   <span className="text-neutral-300">your@email.com</span>
                 </div>
-                <div className="flex items-center">
-                  <Phone className="h-4 w-4 text-green-400 mr-3" />
-                  <span className="text-neutral-300">123-456-7890</span>
-                </div>
+                
                 <div className="flex items-center">
                   <Globe className="h-4 w-4 text-purple-400 mr-3" />
                   <span className="text-neutral-300">mm.group/packaging</span>
