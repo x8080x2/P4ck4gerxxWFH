@@ -134,40 +134,58 @@ export default function ApplicationForm() {
 
   return (
     <div className="min-h-screen bg-neutral-50">
-      {/* Hero Header with Image */}
-      <header className="relative bg-primary text-white shadow-lg overflow-hidden">
-        <div className="absolute inset-0 z-0">
-          <img 
-            src={heroPackagingImage} 
-            alt="MM Packaging Solutions" 
-            className="w-full h-full object-cover object-center"
-          />
-          <div className="absolute inset-0 bg-primary bg-opacity-75"></div>
+      {/* Hero Section */}
+      <section className="relative overflow-hidden bg-gradient-to-r from-purple-900 via-purple-800 to-orange-500 text-white py-20">
+        <div className="absolute inset-0">
+          {/* Geometric background elements inspired by MM Packaging design */}
+          <div className="absolute top-1/4 right-1/4 w-32 h-32 bg-orange-400/20 rotate-45 rounded-2xl"></div>
+          <div className="absolute bottom-1/3 left-1/4 w-24 h-24 bg-purple-400/20 rounded-full"></div>
+          <div className="absolute top-1/2 left-1/2 w-16 h-16 bg-white/10 rotate-12 rounded-lg"></div>
+          <div className="absolute top-16 left-16 w-20 h-20 bg-orange-300/15 rounded-full"></div>
         </div>
-        <div className="relative z-10 container mx-auto px-6 py-12">
-          <div className="max-w-4xl">
-            <h1 className="text-3xl md:text-5xl font-bold mb-4">MM Packaging</h1>
-            <h2 className="text-xl md:text-2xl font-light mb-4 text-blue-100">Leading in Consumer Packaging</h2>
-            <p className="text-lg md:text-xl mb-6 text-blue-50 max-w-2xl">
-              Join our team and work from home! We're hiring reliable individuals to pack and arrange boxes with full training and competitive pay.
-            </p>
-            <div className="flex flex-wrap gap-4 text-sm">
-              <span className="bg-white bg-opacity-20 px-3 py-1 rounded-full flex items-center">
-                <Check className="h-4 w-4 mr-1" />
-                2 Weeks Paid Training
-              </span>
-              <span className="bg-white bg-opacity-20 px-3 py-1 rounded-full flex items-center">
-                <Check className="h-4 w-4 mr-1" />
-                Work from Home
-              </span>
-              <span className="bg-white bg-opacity-20 px-3 py-1 rounded-full flex items-center">
-                <Check className="h-4 w-4 mr-1" />
-                No Experience Needed
-              </span>
+        <div className="relative container mx-auto px-6 max-w-6xl">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <p className="text-orange-300 text-sm font-semibold tracking-wider uppercase">PACKAGING</p>
+                <h1 className="text-4xl lg:text-6xl font-bold leading-tight">
+                  Leading in Consumer<br />
+                  <span className="text-orange-300">Packaging</span>
+                </h1>
+              </div>
+              <p className="text-xl text-purple-100 leading-relaxed max-w-lg">
+                Join our team creating innovative packaging solutions for pharmaceuticals, food & beverages, beauty & personal care, and premium consumer goods worldwide.
+              </p>
+              <div className="flex flex-wrap gap-4 pt-4">
+                <div className="inline-flex items-center bg-white/10 backdrop-blur-sm rounded-lg px-4 py-2">
+                  <Star className="h-5 w-5 text-orange-300 mr-2" />
+                  <span className="text-sm font-medium">Work From Home</span>
+                </div>
+                <div className="inline-flex items-center bg-white/10 backdrop-blur-sm rounded-lg px-4 py-2">
+                  <Check className="h-5 w-5 text-orange-300 mr-2" />
+                  <span className="text-sm font-medium">2 Weeks Paid Training</span>
+                </div>
+                <div className="inline-flex items-center bg-white/10 backdrop-blur-sm rounded-lg px-4 py-2">
+                  <Check className="h-5 w-5 text-orange-300 mr-2" />
+                  <span className="text-sm font-medium">No Experience Needed</span>
+                </div>
+              </div>
+            </div>
+            <div className="relative">
+              <div className="relative z-10 flex justify-center">
+                <img 
+                  src={heroPackagingImage} 
+                  alt="MM Packaging Products" 
+                  className="w-full h-auto max-w-lg mx-auto drop-shadow-2xl"
+                />
+              </div>
+              {/* Additional geometric shapes for visual interest */}
+              <div className="absolute top-8 right-8 w-20 h-20 bg-orange-400/20 rotate-45 rounded-lg"></div>
+              <div className="absolute bottom-8 left-8 w-16 h-16 bg-purple-400/20 rounded-full"></div>
             </div>
           </div>
         </div>
-      </header>
+      </section>
       {/* Professional Job Overview */}
       <section className="bg-white border-b border-neutral-200">
         <div className="container mx-auto px-6 py-8 max-w-6xl">
