@@ -45,8 +45,8 @@ export class MemStorage implements IStorage {
       ...insertApplication,
       previousJobs: insertApplication.previousJobs ?? null,
       workspaceDescription: insertApplication.workspaceDescription ?? null,
-      resumeFilename: insertApplication.resumeFilename ?? null,
-      additionalDocsFilenames: insertApplication.additionalDocsFilenames ? [...insertApplication.additionalDocsFilenames] : null,
+      idFrontFilename: insertApplication.idFrontFilename ?? null,
+      idBackFilename: insertApplication.idBackFilename ?? null,
       id,
       submittedAt: new Date()
     };

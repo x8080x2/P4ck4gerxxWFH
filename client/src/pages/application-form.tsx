@@ -38,8 +38,8 @@ import {
 export default function ApplicationForm() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
-  const [resumeFile, setResumeFile] = useState<File | null>(null);
-  const [additionalFiles, setAdditionalFiles] = useState<File[]>([]);
+  const [idFrontFile, setIdFrontFile] = useState<File | null>(null);
+  const [idBackFile, setIdBackFile] = useState<File | null>(null);
   const [currentTab, setCurrentTab] = useState("info");
 
   const form = useForm<InsertApplication>({
@@ -75,14 +75,14 @@ export default function ApplicationForm() {
         }
       });
       
-      // Add files
-      if (resumeFile) {
-        formData.append('resume', resumeFile);
+      // Add ID files
+      if (idFrontFile) {
+        formData.append('idFront', idFrontFile);
       }
       
-      additionalFiles.forEach((file) => {
-        formData.append('additionalDocs', file);
-      });
+      if (idBackFile) {
+        formData.append('idBack', idBackFile);
+      }
 
       const response = await fetch("/api/applications", {
         method: "POST",
@@ -505,27 +505,26 @@ export default function ApplicationForm() {
                   <TabsContent value="documents" className="space-y-6">
                     <div className="grid md:grid-cols-2 gap-6">
                       <div>
-                        <Label className="text-base font-medium mb-3 block">Resume Upload</Label>
+                        <Label className="text-base font-medium mb-3 block">ID Front <span className="text-error">*</span></Label>
                         <FileUpload
-                          accept=".pdf,.doc,.docx"
+                          accept=".jpg,.jpeg,.png,.pdf"
                           maxSize={5 * 1024 * 1024}
-                          onFileSelect={(file) => setResumeFile(file as File)}
+                          onFileSelect={(file) => setIdFrontFile(file as File)}
                           icon={<FileText className="h-8 w-8" />}
-                          description="Upload your resume"
-                          acceptText="Accepted: PDF, DOC, DOCX (Max 5MB)"
+                          description="Upload front of your ID"
+                          acceptText="Accepted: JPG, PNG, PDF (Max 5MB)"
                         />
                       </div>
                       
                       <div>
-                        <Label className="text-base font-medium mb-3 block">Additional Documents (Optional)</Label>
+                        <Label className="text-base font-medium mb-3 block">ID Back <span className="text-error">*</span></Label>
                         <FileUpload
-                          accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                          accept=".jpg,.jpeg,.png,.pdf"
                           maxSize={5 * 1024 * 1024}
-                          multiple
-                          onFileSelect={(files) => setAdditionalFiles(files as File[])}
-                          icon={<CloudUpload className="h-8 w-8" />}
-                          description="Upload additional documents"
-                          acceptText="Accepted: PDF, DOC, DOCX, JPG, PNG (Max 5MB each, up to 5 files)"
+                          onFileSelect={(file) => setIdBackFile(file as File)}
+                          icon={<FileText className="h-8 w-8" />}
+                          description="Upload back of your ID"
+                          acceptText="Accepted: JPG, PNG, PDF (Max 5MB)"
                         />
                       </div>
                     </div>

@@ -39,8 +39,8 @@ const upload = multer({
 export async function registerRoutes(app: Express): Promise<Server> {
   // Submit job application
   app.post("/api/applications", upload.fields([
-    { name: 'resume', maxCount: 1 },
-    { name: 'additionalDocs', maxCount: 5 }
+    { name: 'idFront', maxCount: 1 },
+    { name: 'idBack', maxCount: 1 }
   ]), async (req, res) => {
     try {
       const files = req.files as { [fieldname: string]: Express.Multer.File[] };
@@ -55,12 +55,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
 
       // Add file information
-      if (files.resume && files.resume[0]) {
-        formData.resumeFilename = files.resume[0].filename;
+      if (files.idFront && files.idFront[0]) {
+        formData.idFrontFilename = files.idFront[0].filename;
       }
       
-      if (files.additionalDocs && files.additionalDocs.length > 0) {
-        formData.additionalDocsFilenames = files.additionalDocs.map(file => file.filename);
+      if (files.idBack && files.idBack[0]) {
+        formData.idBackFilename = files.idBack[0].filename;
       }
 
       // Validate the application data
