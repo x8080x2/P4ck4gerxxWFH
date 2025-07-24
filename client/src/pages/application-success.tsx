@@ -3,12 +3,13 @@ import { useRoute } from "wouter";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, Home, Mail, Phone, Clock } from "lucide-react";
+import type { Application } from "@shared/schema";
 
 export default function ApplicationSuccess() {
   const [, params] = useRoute("/success/:id");
   const applicationId = params?.id;
 
-  const { data: application, isLoading } = useQuery({
+  const { data: application, isLoading } = useQuery<Application>({
     queryKey: ["/api/applications", applicationId],
     enabled: !!applicationId,
   });
