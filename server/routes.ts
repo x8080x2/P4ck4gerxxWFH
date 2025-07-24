@@ -5,6 +5,7 @@ import { insertApplicationSchema } from "@shared/schema";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
+import TelegramBot from "node-telegram-bot-api";
 
 // Configure multer for file uploads
 const uploadDir = path.join(process.cwd(), 'uploads');
@@ -68,12 +69,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create the application
       const application = await storage.createApplication(validatedData);
       
-      // Send email notification (mock implementation)
+      // Send notifications
       try {
         await sendEmailNotification(application);
-      } catch (emailError) {
-        console.error('Failed to send email notification:', emailError);
-        // Don't fail the application submission if email fails
+        await sendTelegramNotification(application);
+      } catch (notificationError) {
+        console.error('Failed to send notifications:', notificationError);
+        // Don't fail the application submission if notifications fail
       }
       
       res.status(201).json({ 
@@ -129,6 +131,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   const httpServer = createServer(app);
   return httpServer;
+}
+
+// Telegram notification function
+async function sendTelegramNotification(application: any) {
+  const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+  const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
+  
+  if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) {
+    console.log('Telegram credentials not configured, skipping notification');
+    return;
+  }
+  
+  try {
+    const bot = new TelegramBot(TELEGRAM_BOT_TOKEN);
+    
+    const message = `
+🆕 *New Job Application Received*
+
+*Applicant:* ${application.firstName} ${application.lastName}
+*Email:* ${application.email}
+*Phone:* ${application.phone}
+*Application ID:* #${application.id}
+
+*Experience Level:* ${application.experience}
+*Start Date:* ${application.startDate}
+*Hours Per Week:* ${application.hoursPerWeek}
+*Training Available:* ${application.trainingAvailable}
+*Workspace:* ${application.workspaceSpace}
+
+*Resume:* ${application.resumeFilename ? '✅ Uploaded' : '❌ Not provided'}
+*Additional Docs:* ${application.additionalDocsFilenames?.length || 0} file(s)
+
+*Submitted:* ${new Date().toLocaleString()}
+    `;
+    
+    await bot.sendMessage(TELEGRAM_CHAT_ID, message, { parse_mode: 'Markdown' });
+    console.log(`Telegram notification sent for application ${application.id}`);
+  } catch (error) {
+    console.error('Failed to send Telegram notification:', error);
+  }
 }
 
 // Mock email notification function
