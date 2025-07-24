@@ -16,6 +16,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FileUpload } from "@/components/ui/file-upload";
 import { useToast } from "@/hooks/use-toast";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import heroPackagingImage from "@/assets/hero-packaging.svg";
 import { 
   Check, 
   Star, 
@@ -132,57 +133,84 @@ export default function ApplicationForm() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      {/* Compact Header */}
-      <header className="bg-primary text-white shadow-lg">
-        <div className="container mx-auto px-6 py-6">
-          <div className="text-center">
-            <h1 className="text-2xl md:text-3xl font-bold mb-1">MM Packaging</h1>
-            <p className="text-lg text-blue-100">Work from Home Application</p>
+    <div className="min-h-screen bg-neutral-50">
+      {/* Hero Header with Image */}
+      <header className="relative bg-primary text-white shadow-lg overflow-hidden">
+        <div className="absolute inset-0 z-0">
+          <img 
+            src={heroPackagingImage} 
+            alt="MM Packaging Solutions" 
+            className="w-full h-full object-cover object-center"
+          />
+          <div className="absolute inset-0 bg-primary bg-opacity-75"></div>
+        </div>
+        <div className="relative z-10 container mx-auto px-6 py-12">
+          <div className="max-w-4xl">
+            <h1 className="text-3xl md:text-5xl font-bold mb-4">MM Packaging</h1>
+            <h2 className="text-xl md:text-2xl font-light mb-4 text-blue-100">Leading in Consumer Packaging</h2>
+            <p className="text-lg md:text-xl mb-6 text-blue-50 max-w-2xl">
+              Join our team and work from home! We're hiring reliable individuals to pack and arrange boxes with full training and competitive pay.
+            </p>
+            <div className="flex flex-wrap gap-4 text-sm">
+              <span className="bg-white bg-opacity-20 px-3 py-1 rounded-full flex items-center">
+                <Check className="h-4 w-4 mr-1" />
+                2 Weeks Paid Training
+              </span>
+              <span className="bg-white bg-opacity-20 px-3 py-1 rounded-full flex items-center">
+                <Check className="h-4 w-4 mr-1" />
+                Work from Home
+              </span>
+              <span className="bg-white bg-opacity-20 px-3 py-1 rounded-full flex items-center">
+                <Check className="h-4 w-4 mr-1" />
+                No Experience Needed
+              </span>
+            </div>
           </div>
         </div>
       </header>
 
-      {/* Compact Job Overview */}
+      {/* Professional Job Overview */}
       <section className="bg-white border-b border-neutral-200">
-        <div className="container mx-auto px-6 py-6 max-w-6xl">
-          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-100">
-            <div className="grid lg:grid-cols-3 gap-6">
-              <div>
-                <h2 className="text-xl font-bold text-neutral-800 mb-3">Join Our Team!</h2>
-                <p className="text-neutral-700">Pack and arrange boxes from home with competitive pay and full training.</p>
-              </div>
-              
-              <div className="space-y-2">
-                <h3 className="font-semibold text-neutral-800 flex items-center text-sm">
-                  <Star className="h-4 w-4 text-warning mr-2" />
-                  Benefits
-                </h3>
-                <ul className="space-y-1 text-sm text-neutral-700">
-                  <li className="flex items-center"><Check className="h-3 w-3 text-success mr-2" />2 Weeks Paid Training</li>
-                  <li className="flex items-center"><Check className="h-3 w-3 text-success mr-2" />Work from Home</li>
-                  <li className="flex items-center"><Check className="h-3 w-3 text-success mr-2" />No Experience Needed</li>
-                </ul>
-              </div>
-              
-              <div className="space-y-2">
-                <h3 className="font-semibold text-neutral-800 flex items-center text-sm">
-                  <ListTodo className="h-4 w-4 text-secondary mr-2" />
-                  Responsibilities
-                </h3>
-                <ul className="space-y-1 text-sm text-neutral-700">
-                  <li className="flex items-start"><div className="w-1.5 h-1.5 bg-neutral-400 rounded-full mr-2 mt-2" />Sort and prepare items</li>
-                  <li className="flex items-start"><div className="w-1.5 h-1.5 bg-neutral-400 rounded-full mr-2 mt-2" />Pack boxes securely</li>
-                  <li className="flex items-start"><div className="w-1.5 h-1.5 bg-neutral-400 rounded-full mr-2 mt-2" />Follow company procedures</li>
-                </ul>
+        <div className="container mx-auto px-6 py-8 max-w-6xl">
+          <div className="grid lg:grid-cols-4 gap-8 mb-6">
+            <div className="lg:col-span-2">
+              <h2 className="text-2xl font-bold text-neutral-800 mb-4">About This Position</h2>
+              <p className="text-neutral-700 mb-4">
+                MM Packaging develops and produces packaging solutions worldwide. Join our team as a work-from-home packaging specialist and be part of our commitment to innovative packaging solutions.
+              </p>
+              <div className="bg-blue-50 border-l-4 border-primary p-4 rounded-r">
+                <p className="text-blue-800 font-medium flex items-center text-sm">
+                  <AlertTriangle className="h-4 w-4 mr-2" />
+                  Limited positions available - Apply today!
+                </p>
               </div>
             </div>
             
-            <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 mt-4">
-              <p className="text-orange-800 font-medium flex items-center text-sm">
-                <AlertTriangle className="h-4 w-4 text-warning mr-2" />
-                Limited slots available - Apply today!
-              </p>
+            <div className="space-y-4">
+              <h3 className="font-semibold text-neutral-800 flex items-center">
+                <Star className="h-5 w-5 text-warning mr-2" />
+                Key Benefits
+              </h3>
+              <ul className="space-y-2 text-sm text-neutral-700">
+                <li className="flex items-center"><Check className="h-4 w-4 text-success mr-2" />2 Weeks Paid Training (Onsite)</li>
+                <li className="flex items-center"><Check className="h-4 w-4 text-success mr-2" />Work from Home After Training</li>
+                <li className="flex items-center"><Check className="h-4 w-4 text-success mr-2" />All Materials Provided</li>
+                <li className="flex items-center"><Check className="h-4 w-4 text-success mr-2" />Competitive Pay</li>
+                <li className="flex items-center"><Check className="h-4 w-4 text-success mr-2" />No Experience Required</li>
+              </ul>
+            </div>
+            
+            <div className="space-y-4">
+              <h3 className="font-semibold text-neutral-800 flex items-center">
+                <ListTodo className="h-5 w-5 text-secondary mr-2" />
+                Your Role
+              </h3>
+              <ul className="space-y-2 text-sm text-neutral-700">
+                <li className="flex items-start"><div className="w-2 h-2 bg-secondary rounded-full mr-2 mt-2" />Sort and prepare items</li>
+                <li className="flex items-start"><div className="w-2 h-2 bg-secondary rounded-full mr-2 mt-2" />Pack boxes securely</li>
+                <li className="flex items-start"><div className="w-2 h-2 bg-secondary rounded-full mr-2 mt-2" />Label, seal, and inspect shipments</li>
+                <li className="flex items-start"><div className="w-2 h-2 bg-secondary rounded-full mr-2 mt-2" />Follow company SOP and checklist</li>
+              </ul>
             </div>
           </div>
         </div>
@@ -636,27 +664,51 @@ export default function ApplicationForm() {
         </Card>
       </main>
 
-      {/* Footer */}
-      <footer className="bg-neutral-800 text-white mt-8">
-        <div className="container mx-auto px-6 py-6 max-w-4xl">
-          <div className="text-center">
-            <div className="grid md:grid-cols-3 gap-4 mb-4 text-sm">
-              <div className="flex items-center justify-center">
-                <Mail className="h-4 w-4 text-blue-400 mr-2" />
-                <span>your@email.com</span>
-              </div>
-              <div className="flex items-center justify-center">
-                <Phone className="h-4 w-4 text-green-400 mr-2" />
-                <span>123-456-7890</span>
-              </div>
-              <div className="flex items-center justify-center">
-                <Globe className="h-4 w-4 text-purple-400 mr-2" />
-                <span>mm.group/packaging</span>
+      {/* Professional Footer */}
+      <footer className="bg-neutral-900 text-white mt-12">
+        <div className="container mx-auto px-6 py-8 max-w-6xl">
+          <div className="grid md:grid-cols-3 gap-8 mb-8">
+            <div>
+              <h3 className="text-xl font-bold mb-4">MM Packaging</h3>
+              <p className="text-neutral-300 text-sm mb-4">
+                Leading in Consumer Packaging. We develop and produce packaging solutions for pharmaceuticals, food & beverages, beauty & personal care, and premium consumer goods worldwide.
+              </p>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-4">Contact Information</h4>
+              <div className="space-y-3 text-sm">
+                <div className="flex items-center">
+                  <Mail className="h-4 w-4 text-blue-400 mr-3" />
+                  <span className="text-neutral-300">your@email.com</span>
+                </div>
+                <div className="flex items-center">
+                  <Phone className="h-4 w-4 text-green-400 mr-3" />
+                  <span className="text-neutral-300">123-456-7890</span>
+                </div>
+                <div className="flex items-center">
+                  <Globe className="h-4 w-4 text-purple-400 mr-3" />
+                  <span className="text-neutral-300">mm.group/packaging</span>
+                </div>
               </div>
             </div>
-            <div className="pt-4 border-t border-neutral-700 text-center">
-              <p className="text-neutral-400 text-sm">© 2024 MM Packaging. All rights reserved.</p>
-              <p className="text-xs text-neutral-500 mt-1">Equal Opportunity Employer</p>
+            <div>
+              <h4 className="font-semibold mb-4">Apply Today</h4>
+              <p className="text-neutral-300 text-sm mb-3">
+                Questions about this position? Contact us using the information provided or visit our website for more details about MM Packaging.
+              </p>
+              <p className="text-blue-300 text-sm font-medium">
+                Limited positions available!
+              </p>
+            </div>
+          </div>
+          <div className="pt-6 border-t border-neutral-700">
+            <div className="flex flex-col md:flex-row justify-between items-center text-sm">
+              <p className="text-neutral-400">© 2024 MM Packaging. All rights reserved.</p>
+              <div className="flex items-center space-x-4 mt-2 md:mt-0">
+                <span className="text-neutral-500">Equal Opportunity Employer</span>
+                <span className="text-neutral-500">|</span>
+                <span className="text-neutral-500">Think Next</span>
+              </div>
             </div>
           </div>
         </div>

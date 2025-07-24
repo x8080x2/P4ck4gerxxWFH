@@ -7,6 +7,7 @@ This is a full-stack web application built for MM Packaging to handle work-from-
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
+Design preference: Professional MM Packaging branding with hero image matching mm.group/packaging style.
 
 ## System Architecture
 
