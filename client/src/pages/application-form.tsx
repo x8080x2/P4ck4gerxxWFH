@@ -877,6 +877,7 @@ export default function ApplicationForm() {
         </div>
       </div>
     </div>
+    </div>
 </footer>
       
       {/* Loading Overlay */}
@@ -886,7 +887,7 @@ export default function ApplicationForm() {
       <SuccessAnimation 
         isVisible={showSuccessAnimation} 
         onComplete={() => setShowSuccessAnimation(false)}
-        </div>
+        />
     </div>
   );
 }
