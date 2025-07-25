@@ -876,8 +876,7 @@ export default function ApplicationForm() {
           <span className="text-neutral-500">Think Next</span>
         </div>
       </div>
-    </div>
-    </div>
+  
 </footer>
       
       {/* Loading Overlay */}
