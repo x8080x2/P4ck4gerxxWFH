@@ -116,14 +116,14 @@ export default function ApplicationForm() {
     setIsCompressing(true);
     try {
       let processedFile = file;
-      
+
       if (isImageFile(file)) {
         processedFile = await compressImage(file, {
           maxSizeMB: 1,
           maxWidthOrHeight: 1920,
           quality: 0.8
         });
-        
+
         toast({
           title: "Image Compressed",
           description: `File size reduced from ${(file.size / 1024 / 1024).toFixed(2)}MB to ${(processedFile.size / 1024 / 1024).toFixed(2)}MB`,
@@ -141,7 +141,7 @@ export default function ApplicationForm() {
         description: "Using original file instead.",
         variant: "destructive",
       });
-      
+
       if (type === 'front') {
         setIdFrontFile(file);
       } else {
@@ -207,7 +207,7 @@ export default function ApplicationForm() {
     if (!formSubmissionLimiter.canAttempt(userKey)) {
       const remainingTime = formSubmissionLimiter.getRemainingTime(userKey);
       const minutes = Math.ceil(remainingTime / 60000);
-      
+
       toast({
         title: "Too Many Attempts",
         description: `Please wait ${minutes} minute${minutes > 1 ? 's' : ''} before submitting again.`,
@@ -231,7 +231,7 @@ export default function ApplicationForm() {
       if (response.ok) {
         formSubmissionLimiter.recordAttempt(userKey);
         setShowSuccessAnimation(true);
-        
+
         // Navigate after animation
         setTimeout(() => {
           setLocation(`/success/${result.applicationId}`);
@@ -802,6 +802,9 @@ export default function ApplicationForm() {
             </Form>
           </CardContent>
         </Card>
+The Git merge conflict markers have been removed from the application-form.tsx file.
+```
+```
       </main>
       {/* Professional Footer */}
       <footer className="bg-neutral-900 text-white mt-12">
@@ -821,14 +824,14 @@ export default function ApplicationForm() {
                 <div className="flex items-center">
                   <Mail className="h-4 w-4 text-blue-400 mr-3" />
                   <span className="text-neutral-300">info@mmpackagingrecruit.info</span>
-                
                 </div>
-
+                <div className="flex items-center">
+                  <Phone className="h-4 w-4 text-green-400 mr-3" />
+                  <span className="text-neutral-300">Text-Only: 815 881 2037</span>
+                </div>
                 <div className="flex items-center">
                   <Globe className="h-4 w-4 text-purple-400 mr-3" />
                   <span className="text-neutral-300">mm.group/packaging</span>
-             
-                 
                 </div>
               </div>
             </div>
@@ -854,10 +857,10 @@ export default function ApplicationForm() {
           </div>
         </div>
       </footer>
-      
+
       {/* Loading Overlay */}
       <LoadingOverlay isVisible={isSubmitting} />
-      
+
       {/* Success Animation */}
       <SuccessAnimation 
         isVisible={showSuccessAnimation} 
