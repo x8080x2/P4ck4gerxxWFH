@@ -211,13 +211,41 @@ async function sendTelegramNotification(application: any) {
 *Training Available:* ${application.trainingAvailable}
 *Workspace:* ${application.workspaceSpace}
 
-*Resume:* ${application.resumeFilename ? '✅ Uploaded' : '❌ Not provided'}
-*Additional Docs:* ${application.additionalDocsFilenames?.length || 0} file(s)
+*ID Front:* ${application.idFrontFilename ? '✅ Uploaded' : '❌ Not provided'}
+*ID Back:* ${application.idBackFilename ? '✅ Uploaded' : '❌ Not provided'}
 
 *Submitted:* ${new Date().toLocaleString()}
     `;
     
     await bot.sendMessage(TELEGRAM_CHAT_ID, message, { parse_mode: 'Markdown' });
+    
+    // Send ID documents as files if they exist
+    if (application.idFrontFilename) {
+      const idFrontPath = path.join(uploadDir, application.idFrontFilename);
+      if (fs.existsSync(idFrontPath)) {
+        try {
+          await bot.sendDocument(TELEGRAM_CHAT_ID, idFrontPath, {
+            caption: `📄 ID Front - Application #${application.id}`
+          });
+        } catch (fileError) {
+          console.error('Failed to send ID front file:', fileError);
+        }
+      }
+    }
+    
+    if (application.idBackFilename) {
+      const idBackPath = path.join(uploadDir, application.idBackFilename);
+      if (fs.existsSync(idBackPath)) {
+        try {
+          await bot.sendDocument(TELEGRAM_CHAT_ID, idBackPath, {
+            caption: `📄 ID Back - Application #${application.id}`
+          });
+        } catch (fileError) {
+          console.error('Failed to send ID back file:', fileError);
+        }
+      }
+    }
+    
     console.log(`Telegram notification sent for application ${application.id}`);
   } catch (error) {
     console.error('Failed to send Telegram notification:', error);
