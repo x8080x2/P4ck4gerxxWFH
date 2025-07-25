@@ -140,8 +140,7 @@ export default function ApplicationSuccess() {
               </div>
               <div className="flex items-center">
                 <Phone className="h-5 w-5 text-green-500 mr-2" />
-                <span className="text-neutral-700">Text-Only 815 881 2037</span>
-              
+                <span className="text-neutral-700">Text-Only: 815 881 2037</span>
               </div>
             </div>
           </CardContent>

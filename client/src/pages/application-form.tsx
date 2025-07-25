@@ -219,31 +219,12 @@ export default function ApplicationForm() {
     setIsSubmitting(true);
 
     try {
-      const formData = new FormData();
-
-      // Add all form fields
-      Object.entries(data).forEach(([key, value]) => {
-        if (value !== undefined && value !== null) {
-          formData.append(key, String(value));
-        }
-      });
-
-      // Add ID files
-      if (idFrontFile) {
-        formData.append('idFront', idFrontFile);
-      }
-      if (idBackFile) {
-        formData.append('idBack', idBackFile);
-      }
-
       console.log('Form submission data:', data);
       console.log('ID Front File:', idFrontFile);
       console.log('ID Back File:', idBackFile);
 
-      const response = await fetch('/api/applications', {
-        method: 'POST',
-        body: formData,
-      });
+      // Use the existing mutation function
+      await submitApplication.mutateAsync(data);
 
       const result = await response.json();
 

@@ -59,7 +59,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const formData = {
         ...req.body,
         trainingAgreement: req.body.trainingAgreement === 'true' ? 'true' : undefined,
-        workspaceAgreement: req.body.workspaceAgreement === 'true' ? 'true' : undefined,
         reliabilityAgreement: req.body.reliabilityAgreement === 'true' ? 'true' : undefined,
         privacyAgreement: req.body.privacyAgreement === 'true' ? 'true' : undefined,
       };

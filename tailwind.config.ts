@@ -61,6 +61,11 @@ export default {
           border: "var(--sidebar-border)",
           ring: "var(--sidebar-ring)",
         },
+        // Custom colors for the application
+        "primary-dark": "#4F46E5", // Indigo-600
+        success: "#10B981", // Emerald-500
+        warning: "#F59E0B", // Amber-500
+        error: "#EF4444", // Red-500
       },
       keyframes: {
         "accordion-down": {
