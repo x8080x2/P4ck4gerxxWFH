@@ -37,6 +37,16 @@ const upload = multer({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Health check endpoint
+  app.get("/api/health", async (req, res) => {
+    try {
+      await storage.getAllApplications();
+      res.json({ status: "healthy", database: "connected" });
+    } catch (error) {
+      res.status(503).json({ status: "unhealthy", database: "disconnected" });
+    }
+  });
+
   // Submit job application
   app.post("/api/applications", upload.fields([
     { name: 'idFront', maxCount: 1 },
@@ -126,6 +136,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error fetching applications:', error);
       res.status(500).json({ message: "Failed to fetch applications" });
+    }
+  });
+
+  // Export applications as CSV
+  app.get("/api/applications/export", async (req, res) => {
+    try {
+      const applications = await storage.getAllApplications();
+      
+      const csvHeaders = [
+        'ID', 'First Name', 'Last Name', 'Email', 'Phone', 'Address',
+        'Experience', 'Previous Jobs', 'Training Available', 'Start Date',
+        'Hours Per Week', 'Workspace Space', 'Submitted At'
+      ];
+      
+      const csvRows = applications.map(app => [
+        app.id,
+        app.firstName,
+        app.lastName,
+        app.email,
+        app.phone,
+        app.address,
+        app.experience,
+        app.previousJobs || '',
+        app.trainingAvailable,
+        app.startDate,
+        app.hoursPerWeek,
+        app.workspaceSpace,
+        app.submittedAt?.toISOString() || ''
+      ]);
+      
+      const csvContent = [
+        csvHeaders.join(','),
+        ...csvRows.map(row => row.map(field => `"${field}"`).join(','))
+      ].join('\n');
+      
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader('Content-Disposition', 'attachment; filename=applications.csv');
+      res.send(csvContent);
+    } catch (error) {
+      console.error('Error exporting applications:', error);
+      res.status(500).json({ message: "Failed to export applications" });
     }
   });
 

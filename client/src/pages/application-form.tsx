@@ -41,6 +41,7 @@ export default function ApplicationForm() {
   const [idFrontFile, setIdFrontFile] = useState<File | null>(null);
   const [idBackFile, setIdBackFile] = useState<File | null>(null);
   const [currentTab, setCurrentTab] = useState("info");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<InsertApplication>({
     resolver: zodResolver(insertApplicationSchema),
@@ -66,19 +67,19 @@ export default function ApplicationForm() {
   const submitApplication = useMutation({
     mutationFn: async (data: InsertApplication) => {
       const formData = new FormData();
-      
+
       // Add all form fields
       Object.entries(data).forEach(([key, value]) => {
         if (value !== undefined && value !== null) {
           formData.append(key, String(value));
         }
       });
-      
+
       // Add ID files
       if (idFrontFile) {
         formData.append('idFront', idFrontFile);
       }
-      
+
       if (idBackFile) {
         formData.append('idBack', idBackFile);
       }
@@ -112,22 +113,58 @@ export default function ApplicationForm() {
     },
   });
 
-  const onSubmit = (data: InsertApplication) => {
-    console.log('Form submission data:', data);
-    console.log('ID Front File:', idFrontFile);
-    console.log('ID Back File:', idBackFile);
-    
-    // Check if required files are uploaded
-    if (!idFrontFile || !idBackFile) {
+  const onSubmit = async (data: InsertApplication) => {
+    setIsSubmitting(true);
+
+    try {
+      const formData = new FormData();
+
+      // Add all form fields
+      Object.entries(data).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          formData.append(key, String(value));
+        }
+      });
+
+      // Add ID files
+      if (idFrontFile) {
+        formData.append('idFront', idFrontFile);
+      }
+      if (idBackFile) {
+        formData.append('idBack', idBackFile);
+      }
+
+      console.log('Form submission data:', data);
+      console.log('ID Front File:', idFrontFile);
+      console.log('ID Back File:', idBackFile);
+
+      const response = await fetch('/api/applications', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        toast({
+          title: "Application Submitted!",
+          description: "Thank you! We'll review your application and contact you within 2-3 business days.",
+          variant: "default",
+        });
+        setLocation(`/success/${result.applicationId}`);
+      } else {
+        throw new Error(result.message || 'Failed to submit application');
+      }
+    } catch (error) {
+      console.error('Error submitting application:', error);
       toast({
-        title: "Missing Required Documents",
-        description: "Please upload both front and back of your ID before submitting.",
+        title: "Submission Failed",
+        description: error instanceof Error ? error.message : "Please check your connection and try again.",
         variant: "destructive",
       });
-      return;
+    } finally {
+      setIsSubmitting(false);
     }
-    
-    submitApplication.mutate(data);
   };
 
   const handleNextTab = () => {
@@ -216,7 +253,7 @@ export default function ApplicationForm() {
                 </p>
               </div>
             </div>
-            
+
             <div className="space-y-4">
               <h3 className="font-semibold text-neutral-800 flex items-center">
                 <Star className="h-5 w-5 text-warning mr-2" />
@@ -230,7 +267,7 @@ export default function ApplicationForm() {
                 <li className="flex items-center"><Check className="h-4 w-4 text-success mr-2" />No Experience Required</li>
               </ul>
             </div>
-            
+
             <div className="space-y-4">
               <h3 className="font-semibold text-neutral-800 flex items-center">
                 <ListTodo className="h-5 w-5 text-secondary mr-2" />
@@ -294,7 +331,7 @@ export default function ApplicationForm() {
                           </FormItem>
                         )}
                       />
-                      
+
                       <FormField
                         control={form.control}
                         name="lastName"
@@ -308,7 +345,7 @@ export default function ApplicationForm() {
                           </FormItem>
                         )}
                       />
-                      
+
                       <FormField
                         control={form.control}
                         name="email"
@@ -322,7 +359,7 @@ export default function ApplicationForm() {
                           </FormItem>
                         )}
                       />
-                      
+
                       <FormField
                         control={form.control}
                         name="phone"
@@ -337,7 +374,7 @@ export default function ApplicationForm() {
                         )}
                       />
                     </div>
-                    
+
                     <FormField
                       control={form.control}
                       name="address"
@@ -371,7 +408,7 @@ export default function ApplicationForm() {
                                 <RadioGroupItem value="none" id="none" />
                                 <Label htmlFor="none">No previous work experience</Label>
                               </div>
-                              
+
                               <div className="flex items-center space-x-2">
                                 <RadioGroupItem value="experienced" id="experienced" />
                                 <Label htmlFor="experienced">Yes</Label>
@@ -382,7 +419,7 @@ export default function ApplicationForm() {
                         </FormItem>
                       )}
                     />
-                    
+
                     <FormField
                       control={form.control}
                       name="previousJobs"
@@ -431,7 +468,7 @@ export default function ApplicationForm() {
                         </FormItem>
                       )}
                     />
-                    
+
                     <div className="grid md:grid-cols-2 gap-4">
                       <FormField
                         control={form.control}
@@ -457,7 +494,7 @@ export default function ApplicationForm() {
                           </FormItem>
                         )}
                       />
-                      
+
                       <FormField
                         control={form.control}
                         name="hoursPerWeek"
@@ -483,7 +520,7 @@ export default function ApplicationForm() {
                         )}
                       />
                     </div>
-                    
+
                     <div className="grid md:grid-cols-2 gap-4">
                       <FormField
                         control={form.control}
@@ -511,8 +548,8 @@ export default function ApplicationForm() {
                           </FormItem>
                         )}
                       />
-                      
-                      
+
+
                     </div>
                   </TabsContent>
 
@@ -529,7 +566,7 @@ export default function ApplicationForm() {
                           acceptText="Accepted: JPG, PNG, PDF (Max 5MB)"
                         />
                       </div>
-                      
+
                       <div>
                         <Label className="text-base font-medium mb-3 block">ID Back <span className="text-error">*</span></Label>
                         <FileUpload
@@ -567,9 +604,9 @@ export default function ApplicationForm() {
                           </FormItem>
                         )}
                       />
-                      
-                      
-                      
+
+
+
                       <FormField
                         control={form.control}
                         name="reliabilityAgreement"
@@ -591,7 +628,7 @@ export default function ApplicationForm() {
                           </FormItem>
                         )}
                       />
-                      
+
                       <FormField
                         control={form.control}
                         name="privacyAgreement"
@@ -626,11 +663,11 @@ export default function ApplicationForm() {
                     >
                       Previous
                     </Button>
-                    
+
                     {currentTab === "agreements" ? (
                       <Button 
                         type="submit" 
-                        disabled={submitApplication.isPending}
+                        disabled={submitApplication.isPending || isSubmitting}
                         className="bg-primary text-white hover:bg-primary-dark"
                         onClick={(e) => {
                           // Log form errors if any
@@ -646,7 +683,7 @@ export default function ApplicationForm() {
                           }
                         }}
                       >
-                        {submitApplication.isPending ? "Submitting..." : "Submit Application"}
+                        {submitApplication.isPending || isSubmitting ? "Submitting..." : "Submit Application"}
                       </Button>
                     ) : (
                       <Button 
@@ -683,7 +720,7 @@ export default function ApplicationForm() {
                   <Mail className="h-4 w-4 text-blue-400 mr-3" />
                   <span className="text-neutral-300">-----</span>
                 </div>
-                
+
                 <div className="flex items-center">
                   <Globe className="h-4 w-4 text-purple-400 mr-3" />
                   <span className="text-neutral-300">mm.group/packaging</span>

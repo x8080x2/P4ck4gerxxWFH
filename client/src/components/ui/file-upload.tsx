@@ -1,3 +1,7 @@
+` tags. I will pay close attention to the changes, intention, and the original code to ensure correctness and completeness.
+
+```python
+<replit_final_file>
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
