@@ -840,20 +840,15 @@ export default function ApplicationForm() {
                 <div className="flex items-center">
                   <Mail className="h-4 w-4 text-blue-400 mr-3" />
                   <span className="text-neutral-300">-----</span>
-                   <div className="grid md:grid-cols-2 gap-4">
-              <div className="flex items-center">
-                <Mail className="h-5 w-5 text-blue-500 mr-2" />
-                <span className="text-neutral-700">info@mmpackagingrecruit.info</span>
-              </div>
-              <div className="flex items-center">
-                <Phone className="h-5 w-5 text-green-500 mr-2" />
-                <span className="text-neutral-700">Text-Only 815 881 2037</span>
-              </div>
-                </div>
+                                 </div>
 
                 <div className="flex items-center">
                   <Globe className="h-4 w-4 text-purple-400 mr-3" />
                   <span className="text-neutral-300">mm.group/packaging</span>
+                <span className="text-neutral-700">info@mmpackagingrecruit.info</span>
+                <span className="text-neutral-700">Text-Only 815 881 2037</span>
+              </div>
+
                 </div>
               </div>
             </div>
