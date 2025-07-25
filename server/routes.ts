@@ -55,11 +55,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
 
       // Add file information
-      if (files.idFront && files.idFront[0]) {
+      if (files && files.idFront && files.idFront[0]) {
         formData.idFrontFilename = files.idFront[0].filename;
       }
       
-      if (files.idBack && files.idBack[0]) {
+      if (files && files.idBack && files.idBack[0]) {
         formData.idBackFilename = files.idBack[0].filename;
       }
 
