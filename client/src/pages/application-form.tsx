@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
@@ -16,6 +16,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FileUpload } from "@/components/ui/file-upload";
 import { useToast } from "@/hooks/use-toast";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { FormProgress } from "@/components/ui/form-progress";
+import { LoadingOverlay, SuccessAnimation } from "@/components/ui/success-animation";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { compressImage, isImageFile } from "@/lib/image-compression";
+import { formSubmissionLimiter } from "@/lib/rate-limiting";
 import heroPackagingImage from "@/assets/hero-packaging.svg";
 import { 
   Check, 
@@ -42,6 +47,9 @@ export default function ApplicationForm() {
   const [idBackFile, setIdBackFile] = useState<File | null>(null);
   const [currentTab, setCurrentTab] = useState("info");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [completedTabs, setCompletedTabs] = useState<string[]>([]);
+  const [showSuccessAnimation, setShowSuccessAnimation] = useState(false);
+  const [isCompressing, setIsCompressing] = useState(false);
 
   const form = useForm({
     resolver: zodResolver(insertApplicationSchema),
@@ -64,6 +72,85 @@ export default function ApplicationForm() {
       privacyAgreement: "false",
     },
   });
+
+  // Track completed tabs based on form validation
+  useEffect(() => {
+    const values = form.getValues();
+    const errors = form.formState.errors;
+    const newCompletedTabs: string[] = [];
+
+    // Info tab
+    if (values.firstName && values.lastName && values.email && values.phone && values.address && 
+        !errors.firstName && !errors.lastName && !errors.email && !errors.phone && !errors.address) {
+      newCompletedTabs.push("info");
+    }
+
+    // Experience tab (optional fields)
+    if (values.experience) {
+      newCompletedTabs.push("experience");
+    }
+
+    // Availability tab
+    if (values.trainingAvailable && values.startDate && values.hoursPerWeek && values.workspaceSpace &&
+        !errors.trainingAvailable && !errors.startDate && !errors.hoursPerWeek && !errors.workspaceSpace) {
+      newCompletedTabs.push("availability");
+    }
+
+    // Documents tab
+    if (idFrontFile && idBackFile) {
+      newCompletedTabs.push("documents");
+    }
+
+    // Agreements tab
+    if (values.trainingAgreement === "true" && values.reliabilityAgreement === "true" && values.privacyAgreement === "true") {
+      newCompletedTabs.push("agreements");
+    }
+
+    setCompletedTabs(newCompletedTabs);
+  }, [form.formState, form.watch(), idFrontFile, idBackFile]);
+
+  // Handle file compression
+  const handleFileSelect = async (file: File, type: 'front' | 'back') => {
+    if (!file) return;
+
+    setIsCompressing(true);
+    try {
+      let processedFile = file;
+      
+      if (isImageFile(file)) {
+        processedFile = await compressImage(file, {
+          maxSizeMB: 1,
+          maxWidthOrHeight: 1920,
+          quality: 0.8
+        });
+        
+        toast({
+          title: "Image Compressed",
+          description: `File size reduced from ${(file.size / 1024 / 1024).toFixed(2)}MB to ${(processedFile.size / 1024 / 1024).toFixed(2)}MB`,
+        });
+      }
+
+      if (type === 'front') {
+        setIdFrontFile(processedFile);
+      } else {
+        setIdBackFile(processedFile);
+      }
+    } catch (error) {
+      toast({
+        title: "Compression Failed",
+        description: "Using original file instead.",
+        variant: "destructive",
+      });
+      
+      if (type === 'front') {
+        setIdFrontFile(file);
+      } else {
+        setIdBackFile(file);
+      }
+    } finally {
+      setIsCompressing(false);
+    }
+  };
 
   const submitApplication = useMutation({
     mutationFn: async (data: InsertApplication) => {
@@ -115,6 +202,20 @@ export default function ApplicationForm() {
   });
 
   const onSubmit = async (data: InsertApplication) => {
+    // Rate limiting check
+    const userKey = `${data.email}_${data.phone}`;
+    if (!formSubmissionLimiter.canAttempt(userKey)) {
+      const remainingTime = formSubmissionLimiter.getRemainingTime(userKey);
+      const minutes = Math.ceil(remainingTime / 60000);
+      
+      toast({
+        title: "Too Many Attempts",
+        description: `Please wait ${minutes} minute${minutes > 1 ? 's' : ''} before submitting again.`,
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -147,12 +248,13 @@ export default function ApplicationForm() {
       const result = await response.json();
 
       if (response.ok) {
-        toast({
-          title: "Application Submitted!",
-          description: "Thank you! We'll review your application and contact you within 2-3 business days.",
-          variant: "default",
-        });
-        setLocation(`/success/${result.applicationId}`);
+        formSubmissionLimiter.recordAttempt(userKey);
+        setShowSuccessAnimation(true);
+        
+        // Navigate after animation
+        setTimeout(() => {
+          setLocation(`/success/${result.applicationId}`);
+        }, 2500);
       } else {
         throw new Error(result.message || 'Failed to submit application');
       }
@@ -285,35 +387,41 @@ export default function ApplicationForm() {
         </div>
       </section>
       {/* Application Form */}
-      <main className="container mx-auto px-6 py-8 max-w-4xl pt-[40px] pb-[40px] pl-[0px] pr-[0px] ml-[160.6666715px] mr-[160.6666715px]">
+      <main className="container mx-auto px-4 sm:px-6 py-8 max-w-4xl">
         <Card className="shadow-lg">
           <CardHeader className="pb-4">
-            <CardTitle className="text-2xl text-center text-neutral-800">Application Form</CardTitle>
+            <CardTitle className="text-xl sm:text-2xl text-center text-neutral-800">Application Form</CardTitle>
           </CardHeader>
-          <CardContent className="p-6">
+          <CardContent className="p-4 sm:p-6">
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit as any)}>
+                <FormProgress currentTab={currentTab} completedTabs={completedTabs} />
                 <Tabs value={currentTab} onValueChange={setCurrentTab} className="w-full">
-                  <TabsList className="grid w-full grid-cols-5 mb-6">
-                    <TabsTrigger value="info" className="flex items-center gap-1 text-xs">
-                      <User className="h-3 w-3" />
-                      Info
+                  <TabsList className="grid w-full grid-cols-5 mb-6 h-auto">
+                    <TabsTrigger value="info" className="flex flex-col sm:flex-row items-center gap-1 text-xs p-2 sm:p-3">
+                      <User className="h-3 w-3 sm:h-4 sm:w-4" />
+                      <span className="hidden sm:inline">Info</span>
+                      <span className="sm:hidden">1</span>
                     </TabsTrigger>
-                    <TabsTrigger value="experience" className="flex items-center gap-1 text-xs">
-                      <Briefcase className="h-3 w-3" />
-                      Experience
+                    <TabsTrigger value="experience" className="flex flex-col sm:flex-row items-center gap-1 text-xs p-2 sm:p-3">
+                      <Briefcase className="h-3 w-3 sm:h-4 sm:w-4" />
+                      <span className="hidden sm:inline">Experience</span>
+                      <span className="sm:hidden">2</span>
                     </TabsTrigger>
-                    <TabsTrigger value="availability" className="flex items-center gap-1 text-xs">
-                      <Calendar className="h-3 w-3" />
-                      Availability
+                    <TabsTrigger value="availability" className="flex flex-col sm:flex-row items-center gap-1 text-xs p-2 sm:p-3">
+                      <Calendar className="h-3 w-3 sm:h-4 sm:w-4" />
+                      <span className="hidden sm:inline">Availability</span>
+                      <span className="sm:hidden">3</span>
                     </TabsTrigger>
-                    <TabsTrigger value="documents" className="flex items-center gap-1 text-xs">
-                      <Upload className="h-3 w-3" />
-                      Documents
+                    <TabsTrigger value="documents" className="flex flex-col sm:flex-row items-center gap-1 text-xs p-2 sm:p-3">
+                      <Upload className="h-3 w-3 sm:h-4 sm:w-4" />
+                      <span className="hidden sm:inline">Documents</span>
+                      <span className="sm:hidden">4</span>
                     </TabsTrigger>
-                    <TabsTrigger value="agreements" className="flex items-center gap-1 text-xs">
-                      <Shield className="h-3 w-3" />
-                      Agreements
+                    <TabsTrigger value="agreements" className="flex flex-col sm:flex-row items-center gap-1 text-xs p-2 sm:p-3">
+                      <Shield className="h-3 w-3 sm:h-4 sm:w-4" />
+                      <span className="hidden sm:inline">Agreements</span>
+                      <span className="sm:hidden">5</span>
                     </TabsTrigger>
                   </TabsList>
 
@@ -552,17 +660,23 @@ export default function ApplicationForm() {
                   </TabsContent>
 
                   <TabsContent value="documents" className="space-y-6">
-                    <div className="grid md:grid-cols-2 gap-6">
+                    <div className="grid sm:grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
                         <Label className="text-base font-medium mb-3 block">ID Front <span className="text-error">*</span></Label>
                         <FileUpload
                           accept=".jpg,.jpeg,.png,.pdf"
                           maxSize={5 * 1024 * 1024}
-                          onFileSelect={(file) => setIdFrontFile(file as File)}
+                          onFileSelect={(file) => handleFileSelect(file as File, 'front')}
                           icon={<FileText className="h-8 w-8" />}
                           description="Upload front of your ID"
-                          acceptText="Accepted: JPG, PNG, PDF (Max 5MB)"
+                          acceptText="Accepted: JPG, PNG, PDF (Max 5MB) - Images will be automatically compressed"
                         />
+                        {isCompressing && (
+                          <div className="flex items-center mt-2 text-sm text-neutral-600">
+                            <LoadingSpinner size="sm" className="mr-2" />
+                            Compressing image...
+                          </div>
+                        )}
                       </div>
 
                       <div>
@@ -570,11 +684,17 @@ export default function ApplicationForm() {
                         <FileUpload
                           accept=".jpg,.jpeg,.png,.pdf"
                           maxSize={5 * 1024 * 1024}
-                          onFileSelect={(file) => setIdBackFile(file as File)}
+                          onFileSelect={(file) => handleFileSelect(file as File, 'back')}
                           icon={<FileText className="h-8 w-8" />}
                           description="Upload back of your ID"
-                          acceptText="Accepted: JPG, PNG, PDF (Max 5MB)"
+                          acceptText="Accepted: JPG, PNG, PDF (Max 5MB) - Images will be automatically compressed"
                         />
+                        {isCompressing && (
+                          <div className="flex items-center mt-2 text-sm text-neutral-600">
+                            <LoadingSpinner size="sm" className="mr-2" />
+                            Compressing image...
+                          </div>
+                        )}
                       </div>
                     </div>
                   </TabsContent>
@@ -665,8 +785,8 @@ export default function ApplicationForm() {
                     {currentTab === "agreements" ? (
                       <Button 
                         type="submit" 
-                        disabled={submitApplication.isPending || isSubmitting}
-                        className="bg-primary text-white hover:bg-primary-dark"
+                        disabled={submitApplication.isPending || isSubmitting || isCompressing}
+                        className="bg-primary text-white hover:bg-primary-dark flex items-center gap-2"
                         onClick={(e) => {
                           // Log form errors if any
                           const formErrors = form.formState.errors;
@@ -681,7 +801,10 @@ export default function ApplicationForm() {
                           }
                         }}
                       >
-                        {submitApplication.isPending || isSubmitting ? "Submitting..." : "Submit Application"}
+                        {(submitApplication.isPending || isSubmitting) && (
+                          <LoadingSpinner size="sm" />
+                        )}
+                        {submitApplication.isPending || isSubmitting ? "Submitting Application..." : "Submit Application"}
                       </Button>
                     ) : (
                       <Button 
@@ -747,6 +870,15 @@ export default function ApplicationForm() {
           </div>
         </div>
       </footer>
+      
+      {/* Loading Overlay */}
+      <LoadingOverlay isVisible={isSubmitting} />
+      
+      {/* Success Animation */}
+      <SuccessAnimation 
+        isVisible={showSuccessAnimation} 
+        onComplete={() => setShowSuccessAnimation(false)}
+      />
     </div>
   );
 }
