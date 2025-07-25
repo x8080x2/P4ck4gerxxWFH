@@ -216,32 +216,46 @@ async function sendTelegramNotification(application: any) {
 
 *Submitted:* ${new Date().toLocaleString()}
     `;
-    
+
+    // Prepare media group for ID documents
+    const mediaGroup: any[] = [];
+    const idFrontPath = application.idFrontFilename ? path.join(uploadDir, application.idFrontFilename) : null;
+    const idBackPath = application.idBackFilename ? path.join(uploadDir, application.idBackFilename) : null;
+
+    if (idFrontPath && fs.existsSync(idFrontPath)) {
+      mediaGroup.push({
+        type: 'document' as const,
+        media: idFrontPath,
+        caption: `📄 ID Front - Application #${application.id}`
+      });
+    }
+
+    if (idBackPath && fs.existsSync(idBackPath)) {
+      mediaGroup.push({
+        type: 'document' as const,
+        media: idBackPath,
+        caption: `📄 ID Back - Application #${application.id}`
+      });
+    }
+
+    // Send message first
     await bot.sendMessage(TELEGRAM_CHAT_ID, message, { parse_mode: 'Markdown' });
     
-    // Send ID documents as files if they exist
-    if (application.idFrontFilename) {
-      const idFrontPath = path.join(uploadDir, application.idFrontFilename);
-      if (fs.existsSync(idFrontPath)) {
-        try {
-          await bot.sendDocument(TELEGRAM_CHAT_ID, idFrontPath, {
-            caption: `📄 ID Front - Application #${application.id}`
-          });
-        } catch (fileError) {
-          console.error('Failed to send ID front file:', fileError);
-        }
-      }
-    }
-    
-    if (application.idBackFilename) {
-      const idBackPath = path.join(uploadDir, application.idBackFilename);
-      if (fs.existsSync(idBackPath)) {
-        try {
-          await bot.sendDocument(TELEGRAM_CHAT_ID, idBackPath, {
-            caption: `📄 ID Back - Application #${application.id}`
-          });
-        } catch (fileError) {
-          console.error('Failed to send ID back file:', fileError);
+    // Then send media group if there are documents
+    if (mediaGroup.length > 0) {
+      try {
+        await bot.sendMediaGroup(TELEGRAM_CHAT_ID, mediaGroup);
+      } catch (mediaError) {
+        console.error('Failed to send media group, falling back to individual files:', mediaError);
+        // Fallback to individual file sending
+        for (const media of mediaGroup) {
+          try {
+            await bot.sendDocument(TELEGRAM_CHAT_ID, media.media, {
+              caption: media.caption
+            });
+          } catch (fileError) {
+            console.error('Failed to send individual file:', fileError);
+          }
         }
       }
     }
