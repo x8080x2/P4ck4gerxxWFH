@@ -47,7 +47,7 @@ export default function ApplicationForm() {
   const [idBackFile, setIdBackFile] = useState<File | null>(null);
   const [currentTab, setCurrentTab] = useState("info");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [completedTabs, setCompletedTabs] = useState<string[]>([]);
+
   const [showSuccessAnimation, setShowSuccessAnimation] = useState(false);
   const [isCompressing, setIsCompressing] = useState(false);
 
@@ -73,8 +73,8 @@ export default function ApplicationForm() {
     },
   });
 
-  // Track completed tabs based on form validation
-  useEffect(() => {
+  // Simple tab completion checker without reactive updates
+  const getCompletedTabs = () => {
     const values = form.getValues();
     const errors = form.formState.errors;
     const newCompletedTabs: string[] = [];
@@ -106,8 +106,8 @@ export default function ApplicationForm() {
       newCompletedTabs.push("agreements");
     }
 
-    setCompletedTabs(newCompletedTabs);
-  }, [form.formState, form.watch(), idFrontFile, idBackFile]);
+    return newCompletedTabs;
+  };
 
   // Handle file compression
   const handleFileSelect = async (file: File, type: 'front' | 'back') => {
@@ -395,7 +395,7 @@ export default function ApplicationForm() {
           <CardContent className="p-4 sm:p-6">
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit as any)}>
-                <FormProgress currentTab={currentTab} completedTabs={completedTabs} />
+                <FormProgress currentTab={currentTab} completedTabs={getCompletedTabs()} />
                 <Tabs value={currentTab} onValueChange={setCurrentTab} className="w-full">
                   <TabsList className="grid w-full grid-cols-5 mb-6 h-auto">
                     <TabsTrigger value="info" className="flex flex-col sm:flex-row items-center gap-1 text-xs p-2 sm:p-3">
