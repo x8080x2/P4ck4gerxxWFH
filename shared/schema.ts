@@ -19,7 +19,6 @@ export const applications = pgTable("applications", {
   idFrontFilename: text("id_front_filename"),
   idBackFilename: text("id_back_filename"),
   trainingAgreement: text("training_agreement").notNull(),
-  workspaceAgreement: text("workspace_agreement").notNull(),
   reliabilityAgreement: text("reliability_agreement").notNull(),
   privacyAgreement: text("privacy_agreement").notNull(),
   submittedAt: timestamp("submitted_at").defaultNow().notNull(),
