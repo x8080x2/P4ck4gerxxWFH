@@ -30,17 +30,17 @@ export const insertApplicationSchema = createInsertSchema(applications).omit({
 }).extend({
   firstName: z.string().min(1, "First name is required"),
   lastName: z.string().min(1, "Last name is required"),
-  email: z.string().email("Please enter a valid email address"),
-  phone: z.string().min(7, "Please enter a valid phone number").regex(/^[\d\s\-\(\)\+\.]+$/, "Please enter a valid phone number"),
+  email: z.string().min(1, "Email is required").email("Please enter a valid email address"),
+  phone: z.string().min(10, "Phone number must be at least 10 digits").regex(/^[\d\s\-\(\)\+\.]{10,}$/, "Please enter a valid phone number with at least 10 digits"),
   address: z.string().min(10, "Please enter your complete address"),
   experience: z.string().min(1, "Please select your experience level"),
   trainingAvailable: z.string().min(1, "Please select your training availability"),
   startDate: z.string().min(1, "Please select your preferred start date"),
   hoursPerWeek: z.string().min(1, "Please select your availability"),
   workspaceSpace: z.string().min(1, "Please confirm your workspace availability"),
-  trainingAgreement: z.literal("true", { errorMap: () => ({ message: "You must agree to the training commitment" }) }),
-  reliabilityAgreement: z.literal("true", { errorMap: () => ({ message: "You must agree to the reliability commitment" }) }),
-  privacyAgreement: z.literal("true", { errorMap: () => ({ message: "You must agree to the privacy policy" }) }),
+  trainingAgreement: z.string().refine(val => val === "true", { message: "You must agree to the training commitment" }),
+  reliabilityAgreement: z.string().refine(val => val === "true", { message: "You must agree to the reliability commitment" }),
+  privacyAgreement: z.string().refine(val => val === "true", { message: "You must agree to the privacy policy" }),
 });
 
 export type InsertApplication = z.infer<typeof insertApplicationSchema>;

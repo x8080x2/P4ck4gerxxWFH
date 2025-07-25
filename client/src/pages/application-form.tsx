@@ -43,8 +43,9 @@ export default function ApplicationForm() {
   const [currentTab, setCurrentTab] = useState("info");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const form = useForm<InsertApplication>({
+  const form = useForm({
     resolver: zodResolver(insertApplicationSchema),
+    mode: "onChange",
     defaultValues: {
       firstName: "",
       lastName: "",
@@ -58,9 +59,9 @@ export default function ApplicationForm() {
       hoursPerWeek: "",
       workspaceSpace: "",
       workspaceDescription: "",
-      trainingAgreement: "false" as "true",
-      reliabilityAgreement: "false" as "true",
-      privacyAgreement: "false" as "true",
+      trainingAgreement: "false",
+      reliabilityAgreement: "false",
+      privacyAgreement: "false",
     },
   });
 
@@ -291,7 +292,7 @@ export default function ApplicationForm() {
           </CardHeader>
           <CardContent className="p-6">
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)}>
+              <form onSubmit={form.handleSubmit(onSubmit as any)}>
                 <Tabs value={currentTab} onValueChange={setCurrentTab} className="w-full">
                   <TabsList className="grid w-full grid-cols-5 mb-6">
                     <TabsTrigger value="info" className="flex items-center gap-1 text-xs">
