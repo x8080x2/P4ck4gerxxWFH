@@ -111,11 +111,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get application by ID
+  // Get application by ID (supports both numeric ID and applicationId)
   app.get("/api/applications/:id", async (req, res) => {
     try {
-      const id = parseInt(req.params.id);
-      const application = await storage.getApplication(id);
+      const idParam = req.params.id;
+      let application;
+      
+      // Check if it's a numeric ID or alphanumeric applicationId
+      if (/^\d+$/.test(idParam)) {
+        const id = parseInt(idParam);
+        application = await storage.getApplication(id);
+      } else {
+        application = await storage.getApplicationByApplicationId(idParam);
+      }
       
       if (!application) {
         return res.status(404).json({ message: "Application not found" });
@@ -203,7 +211,7 @@ async function sendTelegramNotification(application: any) {
 *Applicant:* ${application.firstName} ${application.lastName}
 *Email:* ${application.email}
 *Phone:* ${application.phone}
-*Application ID:* #${application.id}
+*Application ID:* #${application.applicationId}
 
 *Experience Level:* ${application.experience}
 *Start Date:* ${application.startDate}
@@ -226,7 +234,7 @@ async function sendTelegramNotification(application: any) {
       mediaGroup.push({
         type: 'document' as const,
         media: idFrontPath,
-        caption: `📄 ID Front - Application #${application.id}`
+        caption: `📄 ID Front - Application #${application.applicationId}`
       });
     }
 
@@ -234,7 +242,7 @@ async function sendTelegramNotification(application: any) {
       mediaGroup.push({
         type: 'document' as const,
         media: idBackPath,
-        caption: `📄 ID Back - Application #${application.id}`
+        caption: `📄 ID Back - Application #${application.applicationId}`
       });
     }
 
@@ -260,7 +268,7 @@ async function sendTelegramNotification(application: any) {
       }
     }
     
-    console.log(`Telegram notification sent for application ${application.id}`);
+    console.log(`Telegram notification sent for application ${application.applicationId}`);
   } catch (error) {
     console.error('Failed to send Telegram notification:', error);
   }
@@ -269,7 +277,7 @@ async function sendTelegramNotification(application: any) {
 // Mock email notification function
 async function sendEmailNotification(application: any) {
   // In a real implementation, this would use a service like SendGrid, AWS SES, etc.
-  console.log(`Email notification sent for application ${application.id}`);
+  console.log(`Email notification sent for application ${application.applicationId}`);
   console.log(`Applicant: ${application.firstName} ${application.lastName}`);
   console.log(`Email: ${application.email}`);
   console.log(`Phone: ${application.phone}`);

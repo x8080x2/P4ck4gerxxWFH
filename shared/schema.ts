@@ -4,6 +4,7 @@ import { z } from "zod";
 
 export const applications = pgTable("applications", {
   id: serial("id").primaryKey(),
+  applicationId: text("application_id").notNull().unique(),
   firstName: text("first_name").notNull(),
   lastName: text("last_name").notNull(),
   email: text("email").notNull(),
@@ -26,6 +27,7 @@ export const applications = pgTable("applications", {
 
 export const insertApplicationSchema = createInsertSchema(applications).omit({
   id: true,
+  applicationId: true,
   submittedAt: true,
 }).extend({
   firstName: z.string().min(1, "First name is required"),

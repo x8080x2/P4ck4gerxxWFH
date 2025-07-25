@@ -1,11 +1,22 @@
 import { applications, type Application, type InsertApplication, users, type User, type InsertUser } from "@shared/schema";
 
+// Generate random 7-character alphanumeric ID
+function generateApplicationId(): string {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let result = '';
+  for (let i = 0; i < 7; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+}
+
 export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   createApplication(application: InsertApplication): Promise<Application>;
   getApplication(id: number): Promise<Application | undefined>;
+  getApplicationByApplicationId(applicationId: string): Promise<Application | undefined>;
   getAllApplications(): Promise<Application[]>;
 }
 
@@ -41,6 +52,13 @@ export class MemStorage implements IStorage {
 
   async createApplication(insertApplication: InsertApplication): Promise<Application> {
     const id = this.currentApplicationId++;
+    let applicationId = generateApplicationId();
+    
+    // Ensure unique application ID
+    while (Array.from(this.applications.values()).some(app => app.applicationId === applicationId)) {
+      applicationId = generateApplicationId();
+    }
+    
     const application: Application = { 
       ...insertApplication,
       previousJobs: insertApplication.previousJobs ?? null,
@@ -48,6 +66,7 @@ export class MemStorage implements IStorage {
       idFrontFilename: insertApplication.idFrontFilename ?? null,
       idBackFilename: insertApplication.idBackFilename ?? null,
       id,
+      applicationId,
       submittedAt: new Date()
     };
     this.applications.set(id, application);
@@ -56,6 +75,12 @@ export class MemStorage implements IStorage {
 
   async getApplication(id: number): Promise<Application | undefined> {
     return this.applications.get(id);
+  }
+
+  async getApplicationByApplicationId(applicationId: string): Promise<Application | undefined> {
+    return Array.from(this.applications.values()).find(
+      (application) => application.applicationId === applicationId,
+    );
   }
 
   async getAllApplications(): Promise<Application[]> {
