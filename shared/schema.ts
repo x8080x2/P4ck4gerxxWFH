@@ -31,7 +31,7 @@ export const insertApplicationSchema = createInsertSchema(applications).omit({
   firstName: z.string().min(1, "First name is required"),
   lastName: z.string().min(1, "Last name is required"),
   email: z.string().email("Please enter a valid email address"),
-  phone: z.string().min(10, "Please enter a valid phone number"),
+  phone: z.string().min(7, "Please enter a valid phone number").regex(/^[\d\s\-\(\)\+\.]+$/, "Please enter a valid phone number"),
   address: z.string().min(10, "Please enter your complete address"),
   experience: z.string().min(1, "Please select your experience level"),
   trainingAvailable: z.string().min(1, "Please select your training availability"),
