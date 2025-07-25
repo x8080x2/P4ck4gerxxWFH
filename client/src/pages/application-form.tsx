@@ -224,21 +224,15 @@ export default function ApplicationForm() {
       console.log('ID Back File:', idBackFile);
 
       // Use the existing mutation function
-      await submitApplication.mutateAsync(data);
+      const result = await submitApplication.mutateAsync(data);
+      
+      formSubmissionLimiter.recordAttempt(userKey);
+      setShowSuccessAnimation(true);
 
-      const result = await response.json();
-
-      if (response.ok) {
-        formSubmissionLimiter.recordAttempt(userKey);
-        setShowSuccessAnimation(true);
-
-        // Navigate after animation
-        setTimeout(() => {
-          setLocation(`/success/${result.applicationId}`);
-        }, 2500);
-      } else {
-        throw new Error(result.message || 'Failed to submit application');
-      }
+      // Navigate after animation
+      setTimeout(() => {
+        setLocation(`/success/${result.applicationId}`);
+      }, 2500);
     } catch (error) {
       console.error('Error submitting application:', error);
       toast({
