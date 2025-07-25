@@ -90,7 +90,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.status(201).json({ 
         success: true, 
-        applicationId: application.id,
+        applicationId: application.applicationId,
         message: "Application submitted successfully! We will review your application and contact you within 2-3 business days."
       });
     } catch (error: any) {
