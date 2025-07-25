@@ -113,6 +113,20 @@ export default function ApplicationForm() {
   });
 
   const onSubmit = (data: InsertApplication) => {
+    console.log('Form submission data:', data);
+    console.log('ID Front File:', idFrontFile);
+    console.log('ID Back File:', idBackFile);
+    
+    // Check if required files are uploaded
+    if (!idFrontFile || !idBackFile) {
+      toast({
+        title: "Missing Required Documents",
+        description: "Please upload both front and back of your ID before submitting.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     submitApplication.mutate(data);
   };
 
@@ -618,6 +632,19 @@ export default function ApplicationForm() {
                         type="submit" 
                         disabled={submitApplication.isPending}
                         className="bg-primary text-white hover:bg-primary-dark"
+                        onClick={(e) => {
+                          // Log form errors if any
+                          const formErrors = form.formState.errors;
+                          if (Object.keys(formErrors).length > 0) {
+                            console.log('Form validation errors:', formErrors);
+                            e.preventDefault();
+                            toast({
+                              title: "Form Validation Error",
+                              description: "Please check all required fields and fix any errors.",
+                              variant: "destructive",
+                            });
+                          }
+                        }}
                       >
                         {submitApplication.isPending ? "Submitting..." : "Submit Application"}
                       </Button>
