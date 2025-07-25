@@ -103,9 +103,10 @@ export default function ApplicationForm() {
       setLocation(`/success/${data.applicationId}`);
     },
     onError: (error: Error) => {
+      console.log('Form validation errors:', form.formState.errors);
       toast({
-        title: "Submission Failed",
-        description: error.message,
+        title: "Form Validation Error",
+        description: "Please check all required fields and fix any errors.",
         variant: "destructive",
       });
     },
