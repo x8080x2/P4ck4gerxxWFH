@@ -81,7 +81,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Send notifications
       try {
-        await sendEmailNotification(application);
         await sendTelegramNotification(application);
       } catch (notificationError) {
         console.error('Failed to send notifications:', notificationError);
@@ -274,18 +273,4 @@ async function sendTelegramNotification(application: any) {
   }
 }
 
-// Mock email notification function
-async function sendEmailNotification(application: any) {
-  // In a real implementation, this would use a service like SendGrid, AWS SES, etc.
-  console.log(`Email notification sent for application ${application.applicationId}`);
-  console.log(`Applicant: ${application.firstName} ${application.lastName}`);
-  console.log(`Email: ${application.email}`);
-  console.log(`Phone: ${application.phone}`);
-  console.log(`Start Date: ${application.startDate}`);
-  console.log(`Training Available: ${application.trainingAvailable}`);
-  
-  // Simulate async email sending
-  return new Promise((resolve) => {
-    setTimeout(resolve, 100);
-  });
-}
+
