@@ -4,6 +4,10 @@
 
 This is a full-stack web application built for MM Packaging to handle work-from-home job applications. The system consists of a React frontend with TypeScript, an Express.js backend, and PostgreSQL database integration using Drizzle ORM. The application features a modern UI built with shadcn/ui components and Tailwind CSS.
 
+## Recent Changes
+
+**July 25, 2025**: Successfully migrated project from Replit Agent to standard Replit environment. Fixed tsx dependency issue and verified full application functionality including form submissions, email notifications, and database operations.
+
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
