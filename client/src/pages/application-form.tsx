@@ -886,7 +886,7 @@ export default function ApplicationForm() {
       <SuccessAnimation 
         isVisible={showSuccessAnimation} 
         onComplete={() => setShowSuccessAnimation(false)}
-      <div/>
+        </div>
     </div>
   );
 }
