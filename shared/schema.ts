@@ -40,7 +40,6 @@ export const insertApplicationSchema = createInsertSchema(applications).omit({
   hoursPerWeek: z.string().min(1, "Please select your availability"),
   workspaceSpace: z.string().min(1, "Please confirm your workspace availability"),
   trainingAgreement: z.literal("true", { errorMap: () => ({ message: "You must agree to the training commitment" }) }),
-  workspaceAgreement: z.literal("true", { errorMap: () => ({ message: "You must confirm your workspace requirements" }) }),
   reliabilityAgreement: z.literal("true", { errorMap: () => ({ message: "You must agree to the reliability commitment" }) }),
   privacyAgreement: z.literal("true", { errorMap: () => ({ message: "You must agree to the privacy policy" }) }),
 });

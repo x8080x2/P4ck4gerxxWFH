@@ -58,7 +58,6 @@ export default function ApplicationForm() {
       workspaceSpace: "",
       workspaceDescription: "",
       trainingAgreement: "false" as "true",
-      workspaceAgreement: "false" as "true",
       reliabilityAgreement: "false" as "true",
       privacyAgreement: "false" as "true",
     },
