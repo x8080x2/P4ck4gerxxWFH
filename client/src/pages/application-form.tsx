@@ -877,7 +877,6 @@ export default function ApplicationForm() {
         </div>
       </div>
     </div>
-  </div>
 </footer>
       
       {/* Loading Overlay */}
