@@ -505,15 +505,12 @@ export default function ApplicationForm() {
                             <Select onValueChange={field.onChange} defaultValue={field.value}>
                               <FormControl>
                                 <SelectTrigger>
-                                  <SelectValue placeholder="Select hours" />
+                                  <SelectValue placeholder="Select payment option" />
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
-                                <SelectItem value="part-time">Part-time (20-30 hours)</SelectItem>
-                                <SelectItem value="full-time">Full-time (40 hours)</SelectItem>
-                                <SelectItem value="flexible">Flexible hours</SelectItem>
-                                <SelectItem value="weekends">Weekends only</SelectItem>
-                                <SelectItem value="evenings">Evenings only</SelectItem>
+                                <SelectItem value="500-items">$1/item x 500</SelectItem>
+                                <SelectItem value="1000-items">$1/item x 1000</SelectItem>
                               </SelectContent>
                             </Select>
                             <FormMessage />
