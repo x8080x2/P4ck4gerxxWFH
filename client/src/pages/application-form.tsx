@@ -839,12 +839,15 @@ export default function ApplicationForm() {
               <div className="space-y-3 text-sm">
                 <div className="flex items-center">
                   <Mail className="h-4 w-4 text-blue-400 mr-3" />
-                  <span className="text-neutral-300">-----</span>
+                  <span className="text-neutral-300">info@mmpackagingrecruit.info</span>
+                
                 </div>
 
                 <div className="flex items-center">
                   <Globe className="h-4 w-4 text-purple-400 mr-3" />
                   <span className="text-neutral-300">mm.group/packaging</span>
+             
+                 
                 </div>
               </div>
             </div>

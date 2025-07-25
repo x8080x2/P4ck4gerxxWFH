@@ -136,11 +136,12 @@ export default function ApplicationSuccess() {
             <div className="grid md:grid-cols-2 gap-4">
               <div className="flex items-center">
                 <Mail className="h-5 w-5 text-blue-500 mr-2" />
-                <span className="text-neutral-700">your@email.com</span>
+                <span className="text-neutral-700">info@mmpackagingrecruit.info</span>
               </div>
               <div className="flex items-center">
                 <Phone className="h-5 w-5 text-green-500 mr-2" />
-                <span className="text-neutral-700">123-456-7890</span>
+                <span className="text-neutral-700">Text-Only 815 881 2037</span>
+              
               </div>
             </div>
           </CardContent>
