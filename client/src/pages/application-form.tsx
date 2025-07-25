@@ -823,57 +823,62 @@ export default function ApplicationForm() {
         </Card>
       </main>
       {/* Professional Footer */}
-      <footer className="bg-neutral-900 text-white mt-12">
-        <div className="container mx-auto px-6 py-8 max-w-6xl">
-          <div className="grid md:grid-cols-3 gap-8 mb-8">
-            <div>
-              <h3 className="text-xl font-bold mb-4">MM Packaging</h3>
-              <p className="text-neutral-300 text-sm mb-4">
-                MM Packaging develops and produces innovative packaging solutions for a wide range of industries, including pharmaceuticals & healthcare, food & beverages, premium and luxury beauty & personal care, as well as mass-market and other premium consumer goods.
+    <footer className="bg-neutral-900 text-white mt-12">
+  <div className="container mx-auto px-6 py-8 max-w-6xl">
+    <div className="grid md:grid-cols-3 gap-8 mb-8">
+      {/* Column 1 */}
+      <div>
+        <h3 className="text-xl font-bold mb-4">MM Packaging</h3>
+        <p className="text-neutral-300 text-sm mb-4">
+          MM Packaging develops and produces innovative packaging solutions for a wide range of industries, including pharmaceuticals & healthcare, food & beverages, premium and luxury beauty & personal care, as well as mass-market and other premium consumer goods.
+          With a strong focus on packaging innovation and sustainability, we partner with multinational corporations and local manufacturers worldwide. Our comprehensive product portfolio includes folding cartons, labels, leaflets, special-shaped cartons, microflute, paper, moulded pulp, and sustainable plastics packaging. We are committed to delivering the highest quality standards and best-in-class service.
+        </p>
+      </div>
 
-                With a strong focus on packaging innovation and sustainability, we partner with multinational corporations and local manufacturers worldwide. Our comprehensive product portfolio includes folding cartons, labels, leaflets, special-shaped cartons, microflute, paper, moulded pulp, and sustainable plastics packaging. We are committed to delivering the highest quality standards and best-in-class service.
-              </p>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Contact Information</h4>
-              <div className="space-y-3 text-sm">
-                <div className="flex items-center">
-                  <Mail className="h-4 w-4 text-blue-400 mr-3" />
-                  <span className="text-neutral-300">-----</span>
-                                 </div>
-
-                <div className="flex items-center">
-                  <Globe className="h-4 w-4 text-purple-400 mr-3" />
-                  <span className="text-neutral-300">mm.group/packaging</span>
-                <span className="text-neutral-700">info@mmpackagingrecruit.info</span>
-                <span className="text-neutral-700">Text-Only 815 881 2037</span>
-              </div>
-
-                </div>
-              </div>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-4">Apply Today</h4>
-              <p className="text-neutral-300 text-sm mb-3">
-                Questions about this position? Contact us using the information provided or visit our website for more details about MM Packaging.
-              </p>
-              <p className="text-blue-300 text-sm font-medium">
-                Limited positions available!
-              </p>
-            </div>
+      {/* Column 2 */}
+      <div>
+        <h4 className="font-semibold mb-4">Contact Information</h4>
+        <div className="space-y-3 text-sm">
+          <div className="flex items-center">
+            <Mail className="h-4 w-4 text-blue-400 mr-3" />
+            <span className="text-neutral-300">-----</span>
           </div>
-          <div className="pt-6 border-t border-neutral-700">
-            <div className="flex flex-col md:flex-row justify-between items-center text-sm">
-              <p className="text-neutral-400">© 2025 MM Packaging. All rights reserved.</p>
-              <div className="flex items-center space-x-4 mt-2 md:mt-0">
-                <span className="text-neutral-500">Equal Opportunity Employer</span>
-                <span className="text-neutral-500">|</span>
-                <span className="text-neutral-500">Think Next</span>
-              </div>
+          <div className="flex flex-col space-y-1 ml-7">
+            <div className="flex items-center">
+              <Globe className="h-4 w-4 text-purple-400 mr-3" />
+              <span className="text-neutral-300">mm.group/packaging</span>
             </div>
+            <span className="text-neutral-700">info@mmpackagingrecruit.info</span>
+            <span className="text-neutral-700">Text-Only 815 881 2037</span>
           </div>
         </div>
-      </footer>
+      </div>
+
+      {/* Column 3 */}
+      <div>
+        <h4 className="font-semibold mb-4">Apply Today</h4>
+        <p className="text-neutral-300 text-sm mb-3">
+          Questions about this position? Contact us using the information provided or visit our website for more details about MM Packaging.
+        </p>
+        <p className="text-blue-300 text-sm font-medium">
+          Limited positions available!
+        </p>
+      </div>
+    </div>
+
+    {/* Footer Bottom */}
+    <div className="pt-6 border-t border-neutral-700">
+      <div className="flex flex-col md:flex-row justify-between items-center text-sm">
+        <p className="text-neutral-400">© 2025 MM Packaging. All rights reserved.</p>
+        <div className="flex items-center space-x-4 mt-2 md:mt-0">
+          <span className="text-neutral-500">Equal Opportunity Employer</span>
+          <span className="text-neutral-500">|</span>
+          <span className="text-neutral-500">Think Next</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
       
       {/* Loading Overlay */}
       <LoadingOverlay isVisible={isSubmitting} />
@@ -882,7 +887,7 @@ export default function ApplicationForm() {
       <SuccessAnimation 
         isVisible={showSuccessAnimation} 
         onComplete={() => setShowSuccessAnimation(false)}
-      />
+      <div/>
     </div>
   );
 }
