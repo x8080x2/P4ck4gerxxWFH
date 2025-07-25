@@ -147,7 +147,7 @@ export default function ApplicationForm() {
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="space-y-6">
               <div className="space-y-2">
-                <p className="text-orange-300 text-sm font-semibold tracking-wider uppercase">PACKAGING</p>
+                <p className="text-orange-300 text-sm font-semibold tracking-wider uppercase">MM. PACKAGING</p>
                 <h1 className="text-4xl lg:text-6xl font-bold leading-tight">
                   Leading in Consumer<br />
                   <span className="text-orange-300">Packaging</span>
@@ -644,7 +644,9 @@ export default function ApplicationForm() {
             <div>
               <h3 className="text-xl font-bold mb-4">MM Packaging</h3>
               <p className="text-neutral-300 text-sm mb-4">
-                Leading in Consumer Packaging. We develop and produce packaging solutions for pharmaceuticals, food & beverages, beauty & personal care, and premium consumer goods worldwide.
+                MM Packaging develops and produces innovative packaging solutions for a wide range of industries, including pharmaceuticals & healthcare, food & beverages, premium and luxury beauty & personal care, as well as mass-market and other premium consumer goods.
+
+                With a strong focus on packaging innovation and sustainability, we partner with multinational corporations and local manufacturers worldwide. Our comprehensive product portfolio includes folding cartons, labels, leaflets, special-shaped cartons, microflute, paper, moulded pulp, and sustainable plastics packaging. We are committed to delivering the highest quality standards and best-in-class service.
               </p>
             </div>
             <div>
@@ -652,7 +654,7 @@ export default function ApplicationForm() {
               <div className="space-y-3 text-sm">
                 <div className="flex items-center">
                   <Mail className="h-4 w-4 text-blue-400 mr-3" />
-                  <span className="text-neutral-300">your@email.com</span>
+                  <span className="text-neutral-300">-----</span>
                 </div>
                 
                 <div className="flex items-center">
@@ -673,7 +675,7 @@ export default function ApplicationForm() {
           </div>
           <div className="pt-6 border-t border-neutral-700">
             <div className="flex flex-col md:flex-row justify-between items-center text-sm">
-              <p className="text-neutral-400">© 2024 MM Packaging. All rights reserved.</p>
+              <p className="text-neutral-400">© 2025 MM Packaging. All rights reserved.</p>
               <div className="flex items-center space-x-4 mt-2 md:mt-0">
                 <span className="text-neutral-500">Equal Opportunity Employer</span>
                 <span className="text-neutral-500">|</span>

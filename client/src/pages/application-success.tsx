@@ -163,7 +163,7 @@ export default function ApplicationSuccess() {
         <div className="container mx-auto px-6 py-8 max-w-4xl">
           <div className="text-center">
             <div className="mt-8 pt-6 border-t border-neutral-700 text-center">
-              <p className="text-neutral-400">© 2024 MM Packaging. All rights reserved.</p>
+              <p className="text-neutral-400">© 2025 MM Packaging. All rights reserved.</p>
               <p className="text-sm text-neutral-500 mt-2">Equal Opportunity Employer</p>
             </div>
           </div>
@@ -172,3 +172,4 @@ export default function ApplicationSuccess() {
     </div>
   );
 }
+
