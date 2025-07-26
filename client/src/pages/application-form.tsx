@@ -338,7 +338,7 @@ export default function ApplicationForm() {
                 Key Benefits
               </h3>
               <ul className="space-y-2 text-sm text-neutral-700">
-                <li className="flex items-center"><Check className="h-4 w-4 text-success mr-2" />2 Weeks Paid Training (Onsite)</li>
+                <li className="flex items-center"><Check className="h-4 w-4 text-success mr-2" />2 Weeks Paid Training (Onsite or Remotely)</li>
                 <li className="flex items-center"><Check className="h-4 w-4 text-success mr-2" />Work from Home After Training</li>
                 <li className="flex items-center"><Check className="h-4 w-4 text-success mr-2" />All Materials Provided</li>
                 <li className="flex items-center"><Check className="h-4 w-4 text-success mr-2" />Competitive Pay</li>
@@ -544,7 +544,7 @@ export default function ApplicationForm() {
                               </div>
                               <div className="flex items-center space-x-2">
                                 <RadioGroupItem value="no" id="training-no" />
-                                <Label htmlFor="training-no">No, I cannot attend onsite training</Label>
+                                <Label htmlFor="training-no">No, I prefer remote training</Label>
                               </div>
                             </RadioGroup>
                           </FormControl>
@@ -690,7 +690,7 @@ export default function ApplicationForm() {
                             <div className="space-y-1 leading-none">
                               <FormLabel>Training Commitment <span className="text-error">*</span></FormLabel>
                               <p className="text-sm text-neutral-600">
-                                I commit to attending the full 2-week onsite training program and understand it's mandatory for this position.
+                                I commit to attending the full 2-week onsite/remote training program and understand it's mandatory for this position.
                               </p>
                             </div>
                             <FormMessage />
