@@ -796,9 +796,7 @@ export default function ApplicationForm() {
             </Form>
           </CardContent>
         </Card>
-The Git merge conflict markers have been removed from the application-form.tsx file.
-```
-```
+
       </main>
       {/* Professional Footer */}
       <footer className="bg-neutral-900 text-white mt-12">
