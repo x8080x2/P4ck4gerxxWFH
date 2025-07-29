@@ -98,6 +98,8 @@ A user has successfully signed the Agreement Letter.
     const clientIP = req.ip || req.connection.remoteAddress || req.headers['x-forwarded-for'] as string;
     const validation = codeStorage.validateCode(code, clientIP);
     
+    console.log(`AGL Code validation attempt: ${code} from IP: ${clientIP} - Result: ${validation.valid ? 'VALID' : 'INVALID'} ${validation.reason || ''}`);
+    
     if (validation.valid) {
       res.json({ 
         success: true, 
@@ -109,6 +111,35 @@ A user has successfully signed the Agreement Letter.
         message: validation.reason || 'Invalid access code' 
       });
     }
+  });
+
+  // Debug endpoint to check code storage stats (development only)
+  app.get('/api/debug/agl-stats', (req, res) => {
+    if (process.env.NODE_ENV === 'production') {
+      return res.status(404).json({ message: 'Not found' });
+    }
+    
+    const stats = codeStorage.getCodeStats();
+    res.json({
+      ...stats,
+      environment: process.env.NODE_ENV,
+      telegramConfigured: !!(process.env.TELEGRAM_BOT_TOKEN && process.env.TELEGRAM_CHAT_ID)
+    });
+  });
+
+  // Test endpoint to generate a code for development
+  app.post('/api/debug/generate-test-code', (req, res) => {
+    if (process.env.NODE_ENV === 'production') {
+      return res.status(404).json({ message: 'Not found' });
+    }
+    
+    const code = codeStorage.generateCode();
+    console.log(`Generated test AGL code: ${code}`);
+    res.json({ 
+      success: true, 
+      code,
+      message: 'Test code generated for development'
+    });
   });
 
   const httpServer = createServer(app);
