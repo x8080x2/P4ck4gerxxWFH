@@ -7,6 +7,7 @@ interface AccessCode {
   ipAddress?: string;
   userAgent?: string;
   attempts: number;
+  lastActivity: Date;
 }
 
 const accessCodes = new Map<string, AccessCode>();
@@ -31,7 +32,8 @@ export const codeStorage = {
       expiresAt,
       ipAddress,
       userAgent,
-      attempts: 0
+      attempts: 0,
+      lastActivity: new Date()
     });
     
     return code;
@@ -77,6 +79,16 @@ export const codeStorage = {
       return { valid: false, reason: 'Code has expired' };
     }
 
+    // Check for 5-minute inactivity timeout
+    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+    if (accessCode.lastActivity < fiveMinutesAgo) {
+      accessCodes.delete(upperCode);
+      return { valid: false, reason: 'Code expired due to inactivity (5 minutes)' };
+    }
+
+    // Update last activity
+    accessCode.lastActivity = new Date();
+
     // Increment attempt counter
     accessCode.attempts++;
     
@@ -91,10 +103,24 @@ export const codeStorage = {
     return { valid: true };
   },
 
+  // Update activity for an active code (for keeping session alive)
+  updateActivity(code: string): boolean {
+    const upperCode = code.toUpperCase();
+    const accessCode = accessCodes.get(upperCode);
+    
+    if (accessCode && !accessCode.used) {
+      accessCode.lastActivity = new Date();
+      return true;
+    }
+    return false;
+  },
+
   cleanExpiredCodes(): void {
     const now = new Date();
+    const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000);
+    
     for (const [code, accessCode] of accessCodes) {
-      if (now > accessCode.expiresAt) {
+      if (now > accessCode.expiresAt || accessCode.lastActivity < fiveMinutesAgo) {
         accessCodes.delete(code);
       }
     }

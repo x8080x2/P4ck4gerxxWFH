@@ -1,6 +1,7 @@
 
 import { useRef, useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
+import { Button } from '@/components/ui/button';
 
 export default function AgreementLetter() {
   const [, setLocation] = useLocation();
@@ -15,8 +16,8 @@ export default function AgreementLetter() {
       return;
     }
     
-    // Check if access has expired (2 hours)
-    if (accessTime && Date.now() - parseInt(accessTime) > 7200000) {
+    // Check if access has expired (5 minutes for security)
+    if (accessTime && Date.now() - parseInt(accessTime) > 300000) {
       sessionStorage.removeItem('agl_access');
       sessionStorage.removeItem('agl_access_time');
       setLocation('/agl-access');
@@ -41,6 +42,8 @@ export default function AgreementLetter() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [hasSignature, setHasSignature] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showSubmitButton, setShowSubmitButton] = useState(false);
 
   const startDrawing = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
     setIsDrawing(true);
@@ -82,6 +85,10 @@ export default function AgreementLetter() {
 
   const stopDrawing = () => {
     setIsDrawing(false);
+    if (hasSignature) {
+      // Show submit button after user finishes drawing
+      setShowSubmitButton(true);
+    }
   };
 
   const clearSignature = () => {
@@ -93,6 +100,27 @@ export default function AgreementLetter() {
     
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     setHasSignature(false);
+    setShowSubmitButton(false);
+  };
+
+  const handleSubmitSignature = async () => {
+    if (!hasSignature) return;
+    
+    setIsSubmitting(true);
+    
+    try {
+      // Clear the session and redirect back to code entry
+      sessionStorage.removeItem('agl_access');
+      sessionStorage.removeItem('agl_access_time');
+      
+      // Show success message and redirect
+      alert('Agreement signed successfully! You will be redirected back to the code entry page.');
+      setLocation('/agl-access');
+    } catch (error) {
+      alert('Error submitting signature. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   useEffect(() => {
