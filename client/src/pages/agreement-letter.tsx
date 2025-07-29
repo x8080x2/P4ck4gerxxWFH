@@ -1,9 +1,9 @@
 
 export default function AgreementLetter() {
   return (
-    <div style={{ fontFamily: "'Courier New', monospace", margin: 0, padding: '20px', backgroundColor: '#fafafa', fontSize: '11px', lineHeight: 1 }}>
+    <div style={{ fontFamily: "'Times New Roman', 'Liberation Serif', 'DejaVu Serif', serif", margin: 0, padding: '20px', backgroundColor: '#fafafa', fontSize: '12px', lineHeight: 1.4 }}>
       <div style={{ width: '400mm', maxWidth: '400mm', margin: '0 auto', backgroundColor: 'white', border: '8px solid #fff', padding: 0, boxShadow: '0 4px 8px rgba(0,0,0,0.1)' }}>
-        <div style={{ background: 'linear-gradient(135deg, #663399 0%, #cc6699 100%)', color: 'white', padding: '40px', textAlign: 'left', fontWeight: 'bold', fontSize: '13px', position: 'relative', overflow: 'hidden' }}>
+        <div style={{ background: 'linear-gradient(135deg, #663399 0%, #cc6699 100%)', color: 'white', padding: '40px', textAlign: 'left', fontWeight: 'bold', fontSize: '14px', position: 'relative', overflow: 'hidden' }}>
           <div style={{ position: 'absolute', top: '-50px', right: '-50px', width: '200px', height: '200px', background: 'rgba(255,255,255,0.1)', borderRadius: '50%', opacity: 0.3 }}></div>
           <div style={{ position: 'absolute', bottom: '-30px', right: '100px', width: '150px', height: '150px', background: 'rgba(255,255,255,0.05)', borderRadius: '50%', opacity: 0.5 }}></div>
           <div style={{ position: 'relative', zIndex: 2 }}>
@@ -38,11 +38,11 @@ export default function AgreementLetter() {
             <div style={{ flex: 1, borderBottom: '1px solid #000', minHeight: '16px', paddingLeft: '3px', fontSize: '10px' }}>TBD</div>
           </div>
           
-          <div style={{ backgroundColor: '#e0e0e0', padding: '6px', fontWeight: 'bold', fontSize: '11px', margin: '15px -15px 10px -15px', borderTop: '2px solid #000', borderBottom: '1px solid #000' }}>POSITION & RESPONSIBILITIES</div>
+          <div style={{ backgroundColor: '#e0e0e0', padding: '8px', fontWeight: 'bold', fontSize: '12px', margin: '15px -15px 10px -15px', borderTop: '2px solid #000', borderBottom: '1px solid #000', letterSpacing: '0.5px' }}>POSITION & RESPONSIBILITIES</div>
           
           <div style={{ display: 'flex', marginBottom: '8px', alignItems: 'flex-start' }}>
-            <div style={{ width: '180px', fontWeight: 'bold', fontSize: '10px', paddingRight: '8px', flexShrink: 0 }}>Job Title:</div>
-            <div style={{ flex: 1, borderBottom: '1px solid #000', minHeight: '16px', paddingLeft: '3px', fontSize: '10px' }}><strong>Packaging Associate (Independent Contractor)</strong></div>
+            <div style={{ width: '180px', fontWeight: 'bold', fontSize: '11px', paddingRight: '8px', flexShrink: 0 }}>Job Title:</div>
+            <div style={{ flex: 1, borderBottom: '1px solid #000', minHeight: '18px', paddingLeft: '3px', fontSize: '11px' }}><strong>Packaging Associate (Independent Contractor)</strong></div>
           </div>
           
           <div style={{ display: 'flex', marginBottom: '8px', alignItems: 'flex-start' }}>
@@ -55,8 +55,8 @@ export default function AgreementLetter() {
             <div style={{ flex: 1, borderBottom: '1px solid #000', minHeight: '16px', paddingLeft: '3px', fontSize: '10px' }}>U.S. residents</div>
           </div>
           
-          <div style={{ display: 'flex', alignItems: 'flex-start', margin: '6px 0', fontSize: '9px' }}>
-            <div style={{ width: '12px', height: '12px', border: '1px solid #000', marginRight: '8px', flexShrink: 0, marginTop: '2px' }}></div>
+          <div style={{ display: 'flex', alignItems: 'flex-start', margin: '8px 0', fontSize: '10px', lineHeight: '1.3' }}>
+            <div style={{ width: '12px', height: '12px', border: '1px solid #000', marginRight: '10px', flexShrink: 0, marginTop: '2px' }}></div>
             Primary Responsibilities: Sorting items for shipment, packing and assembling boxes, applying shipping labels, inspecting completed packages for accuracy and quality
           </div>
           
