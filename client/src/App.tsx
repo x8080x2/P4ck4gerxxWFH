@@ -27,7 +27,7 @@ function App() {
   // Initialize cache manager when app starts
   useEffect(() => {
     // Cache manager is already initialized via import
-    console.log('🧹 Cache manager initialized');
+
     
     // Cleanup on unmount
     return () => {

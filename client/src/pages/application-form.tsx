@@ -192,7 +192,7 @@ export default function ApplicationForm() {
       setLocation(`/success/${data.applicationId}`);
     },
     onError: (error: Error) => {
-      console.log('Form validation errors:', form.formState.errors);
+
       toast({
         title: "Form Validation Error",
         description: "Please check all required fields and fix any errors.",
@@ -219,9 +219,8 @@ export default function ApplicationForm() {
     setIsSubmitting(true);
 
     try {
-      console.log('Form submission data:', data);
-      console.log('ID Front File:', idFrontFile);
-      console.log('ID Back File:', idBackFile);
+
+
 
       // Use the existing mutation function
       const result = await submitApplication.mutateAsync(data);
@@ -766,7 +765,7 @@ export default function ApplicationForm() {
                           // Log form errors if any
                           const formErrors = form.formState.errors;
                           if (Object.keys(formErrors).length > 0) {
-                            console.log('Form validation errors:', formErrors);
+
                             e.preventDefault();
                             toast({
                               title: "Form Validation Error",

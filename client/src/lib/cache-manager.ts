@@ -60,7 +60,7 @@ class CacheManager {
 
     this.cleanupTimer = setInterval(() => {
       this.clearCache();
-      console.log('🧹 Auto cache cleanup completed');
+
     }, this.config.autoCleanupInterval);
   }
 
@@ -74,7 +74,7 @@ class CacheManager {
 
       this.idleTimer = setTimeout(() => {
         this.clearCache();
-        console.log('🧹 Idle cache cleanup completed');
+
       }, this.config.idleCleanupDelay);
     };
 
@@ -96,7 +96,7 @@ class CacheManager {
         const memInfo = (performance as any).memory;
         if (memInfo && memInfo.usedJSHeapSize > this.config.memoryThreshold) {
           this.clearCache();
-          console.log('🧹 Memory threshold cache cleanup completed');
+
         }
       }, 60000); // Check every minute
     }
@@ -119,7 +119,7 @@ class CacheManager {
         this.clearBrowserCache();
       }
       
-      console.log('🧹 Cache cleared successfully');
+
     } catch (error) {
       console.error('Failed to clear cache:', error);
     }

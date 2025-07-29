@@ -170,17 +170,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const validation = codeStorage.validateCode(code, clientIP);
       
       if (validation.valid) {
-        // Log successful access
-        console.log(`AGL access granted for IP: ${clientIP} at ${new Date().toISOString()}`);
-        
+
         res.json({ 
           success: true, 
           message: "Code validated successfully" 
         });
       } else {
-        // Log failed attempts
-        console.log(`AGL access denied for IP: ${clientIP} - Reason: ${validation.reason} at ${new Date().toISOString()}`);
-        
+
         res.status(401).json({ 
           success: false, 
           message: validation.reason || "Invalid or expired code" 
@@ -300,7 +296,6 @@ async function setupTelegramBot() {
   const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
   
   if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) {
-    console.log('Telegram bot not configured');
     return;
   }
 
@@ -606,18 +601,23 @@ Are you sure you want to proceed?
         });
       } else if (data === 'confirm_clear_all') {
         try {
-          // Clear all data via API
-          const response = await fetch('http://localhost:5000/api/admin/clear-all', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' }
-          });
-
-          if (response.ok) {
-            const successMessage = `
+          // Clear data directly instead of making HTTP call
+          await storage.clearAllData();
+          
+          // Clear uploaded files
+          const uploadDir = path.join(process.cwd(), 'uploads');
+          if (fs.existsSync(uploadDir)) {
+            const files = fs.readdirSync(uploadDir);
+            files.forEach(file => {
+              fs.unlinkSync(path.join(uploadDir, file));
+            });
+          }
+          
+          const successMessage = `
 ✅ *All Data Cleared Successfully*
 
 The following has been completely removed:
-• All job applications (${await storage.getAllApplications().then(apps => apps.length)} applications)
+• All job applications deleted
 • All uploaded files and documents
 • All statistics and history
 • All access codes
@@ -637,17 +637,13 @@ The application system is now clean and ready for new submissions.
               ]
             };
 
-            bot.editMessageText(successMessage, {
-              chat_id: chatId,
-              message_id: callbackQuery.message?.message_id,
-              parse_mode: 'Markdown',
-              reply_markup: keyboard
-            });
-          } else {
-            bot.answerCallbackQuery(callbackQuery.id, { text: '❌ Failed to clear data' });
-          }
+          bot.editMessageText(successMessage, {
+            chat_id: chatId,
+            message_id: callbackQuery.message?.message_id,
+            parse_mode: 'Markdown',
+            reply_markup: keyboard
+          });
         } catch (error) {
-          console.error('Failed to clear all data:', error);
           bot.answerCallbackQuery(callbackQuery.id, { text: '❌ Failed to clear data' });
         }
       } else if (data === 'main_menu') {
@@ -748,13 +744,19 @@ Type "CONFIRM DELETE" to proceed, or anything else to cancel.
       
       if (msg.text === 'CONFIRM DELETE') {
         try {
-          const response = await fetch('http://localhost:5000/api/admin/clear-all', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' }
-          });
-
-          if (response.ok) {
-            const successMessage = `
+          // Clear data directly instead of making HTTP call
+          await storage.clearAllData();
+          
+          // Clear uploaded files
+          const uploadDir = path.join(process.cwd(), 'uploads');
+          if (fs.existsSync(uploadDir)) {
+            const files = fs.readdirSync(uploadDir);
+            files.forEach(file => {
+              fs.unlinkSync(path.join(uploadDir, file));
+            });
+          }
+          
+          const successMessage = `
 ✅ *All Data Successfully Cleared*
 
 • All applications deleted
@@ -763,20 +765,15 @@ Type "CONFIRM DELETE" to proceed, or anything else to cancel.
 • System ready for new submissions
 
 Telegram history has been reset to 0.
-            `;
-            
-            bot.sendMessage(chatId, successMessage, { parse_mode: 'Markdown' });
-          } else {
-            bot.sendMessage(chatId, '❌ Failed to clear data');
-          }
+          `;
+          
+          bot.sendMessage(chatId, successMessage, { parse_mode: 'Markdown' });
         } catch (error) {
-          console.error('Failed to clear all data:', error);
           bot.sendMessage(chatId, '❌ Error clearing data');
         }
       }
     });
 
-    console.log('Telegram bot setup completed');
   } catch (error) {
     console.error('Failed to setup Telegram bot:', error);
   }
@@ -791,7 +788,6 @@ async function setupDailySync() {
   const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
   
   if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) {
-    console.log('Daily sync not configured - missing Telegram credentials');
     return;
   }
 
@@ -841,7 +837,7 @@ Have a great day managing your applications! 🚀
         `;
 
         await bot.sendMessage(TELEGRAM_CHAT_ID, message, { parse_mode: 'Markdown' });
-        console.log('Daily sync summary sent successfully');
+
       } catch (error) {
         console.error('Failed to send daily sync:', error);
       }
@@ -853,12 +849,11 @@ Have a great day managing your applications! 🚀
 setupDailySync();
 
 // Telegram notification function
-async function sendTelegramNotification(application: any) {
+export async function sendTelegramNotification(application: any) {
   const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
   const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
   
   if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) {
-    console.log('Telegram credentials not configured, skipping notification');
     return;
   }
   
@@ -928,7 +923,7 @@ async function sendTelegramNotification(application: any) {
       }
     }
     
-    console.log(`Telegram notification sent for application ${application.applicationId}`);
+
   } catch (error) {
     console.error('Failed to send Telegram notification:', error);
   }
