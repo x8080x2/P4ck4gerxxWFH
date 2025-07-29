@@ -84,6 +84,33 @@ A user has successfully signed the Agreement Letter.
     }
   });
 
+  // API endpoint to validate AGL access codes
+  app.post('/api/validate-agl-code', (req, res) => {
+    const { code } = req.body;
+    
+    if (!code || typeof code !== 'string') {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Access code is required' 
+      });
+    }
+
+    const clientIP = req.ip || req.connection.remoteAddress || req.headers['x-forwarded-for'] as string;
+    const validation = codeStorage.validateCode(code, clientIP);
+    
+    if (validation.valid) {
+      res.json({ 
+        success: true, 
+        message: 'Access granted' 
+      });
+    } else {
+      res.status(401).json({ 
+        success: false, 
+        message: validation.reason || 'Invalid access code' 
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
@@ -109,7 +136,7 @@ async function setupTelegramBot() {
       const chatId = msg.chat.id.toString();
 
       if (chatId !== TELEGRAM_CHAT_ID) {
-        bot.sendMessage(chatId, '❌ Unauthorized access');
+        bot?.sendMessage(chatId, '❌ Unauthorized access');
         return;
       }
 
@@ -126,11 +153,23 @@ Welcome to the AGL (Agreement Letter) code generator bot. Use the button below t
               text: '🔑 Generate AGL Code',
               callback_data: 'generate_code'
             }
+          ],
+          [
+            {
+              text: '📊 View Statistics',
+              callback_data: 'view_stats'
+            }
+          ],
+          [
+            {
+              text: '❓ Help',
+              callback_data: 'show_help'
+            }
           ]
         ]
       };
 
-      bot.sendMessage(chatId, welcomeMessage, {
+      bot?.sendMessage(chatId, welcomeMessage, {
         parse_mode: 'Markdown',
         reply_markup: keyboard
       });
@@ -141,7 +180,7 @@ Welcome to the AGL (Agreement Letter) code generator bot. Use the button below t
       const chatId = callbackQuery.message?.chat.id.toString();
 
       if (chatId !== TELEGRAM_CHAT_ID) {
-        bot.answerCallbackQuery(callbackQuery.id, { text: '❌ Unauthorized access' });
+        bot?.answerCallbackQuery(callbackQuery.id, { text: '❌ Unauthorized access' });
         return;
       }
 
@@ -153,7 +192,7 @@ Welcome to the AGL (Agreement Letter) code generator bot. Use the button below t
 🔑 *New AGL Access Code Generated*
 
 *Code:* \`${code}\`
-*Valid for:* 24 hours
+*Valid for:* 2 hours
 *Status:* Active
 
 Share this code with the user to access the Agreement Letter page.
@@ -170,7 +209,124 @@ Share this code with the user to access the Agreement Letter page.
           ]
         };
 
-        bot.editMessageText(message, {
+        bot?.editMessageText(message, {
+          chat_id: chatId,
+          message_id: callbackQuery.message?.message_id,
+          parse_mode: 'Markdown',
+          reply_markup: keyboard
+        });
+      } else if (data === 'view_stats') {
+        const stats = codeStorage.getCodeStats();
+        const message = `
+📊 *AGL Code Statistics*
+
+*Total Generated:* ${stats.totalCodes}
+*Active Codes:* ${stats.activeCodes}
+*Used Codes:* ${stats.usedCodes}
+
+Use the button below to generate a new code.
+        `;
+
+        const keyboard = {
+          inline_keyboard: [
+            [
+              {
+                text: '🔑 Generate New Code',
+                callback_data: 'generate_code'
+              }
+            ],
+            [
+              {
+                text: '🔙 Back to Menu',
+                callback_data: 'back_to_menu'
+              }
+            ]
+          ]
+        };
+
+        bot?.editMessageText(message, {
+          chat_id: chatId,
+          message_id: callbackQuery.message?.message_id,
+          parse_mode: 'Markdown',
+          reply_markup: keyboard
+        });
+      } else if (data === 'show_help') {
+        const helpMessage = `
+🤖 *AGL Bot Help*
+
+*Available Commands:*
+/start - Show interactive menu
+/generate_agl_code - Generate new access code
+/stats - View code statistics
+/help - Show this help message
+
+*About AGL Codes:*
+• Valid for 2 hours after generation
+• 5-minute session timeout for security
+• Single-use codes only
+• 8-character alphanumeric format
+
+Use the buttons below for quick actions.
+        `;
+
+        const keyboard = {
+          inline_keyboard: [
+            [
+              {
+                text: '🔑 Generate Code',
+                callback_data: 'generate_code'
+              },
+              {
+                text: '📊 View Stats',
+                callback_data: 'view_stats'
+              }
+            ],
+            [
+              {
+                text: '🔙 Back to Menu',
+                callback_data: 'back_to_menu'
+              }
+            ]
+          ]
+        };
+
+        bot?.editMessageText(helpMessage, {
+          chat_id: chatId,
+          message_id: callbackQuery.message?.message_id,
+          parse_mode: 'Markdown',
+          reply_markup: keyboard
+        });
+      } else if (data === 'back_to_menu') {
+        const welcomeMessage = `
+🔑 *AGL Code Generator Bot*
+
+Welcome to the AGL (Agreement Letter) code generator bot. Use the buttons below to manage access codes.
+        `;
+
+        const keyboard = {
+          inline_keyboard: [
+            [
+              {
+                text: '🔑 Generate AGL Code',
+                callback_data: 'generate_code'
+              }
+            ],
+            [
+              {
+                text: '📊 View Statistics',
+                callback_data: 'view_stats'
+              }
+            ],
+            [
+              {
+                text: '❓ Help',
+                callback_data: 'show_help'
+              }
+            ]
+          ]
+        };
+
+        bot?.editMessageText(welcomeMessage, {
           chat_id: chatId,
           message_id: callbackQuery.message?.message_id,
           parse_mode: 'Markdown',
@@ -179,7 +335,7 @@ Share this code with the user to access the Agreement Letter page.
       }
 
       // Answer the callback query to remove loading state
-      bot.answerCallbackQuery(callbackQuery.id);
+      bot?.answerCallbackQuery(callbackQuery.id);
     });
 
     // Generate AGL code command
@@ -187,7 +343,7 @@ Share this code with the user to access the Agreement Letter page.
       const chatId = msg.chat.id.toString();
 
       if (chatId !== TELEGRAM_CHAT_ID) {
-        bot.sendMessage(chatId, '❌ Unauthorized access');
+        bot?.sendMessage(chatId, '❌ Unauthorized access');
         return;
       }
 
@@ -196,7 +352,7 @@ Share this code with the user to access the Agreement Letter page.
 🔑 *New AGL Access Code Generated*
 
 *Code:* \`${code}\`
-*Valid for:* 24 hours
+*Valid for:* 2 hours
 *Status:* Active
 
 Share this code with the user to access the Agreement Letter page.
@@ -204,7 +360,57 @@ Share this code with the user to access the Agreement Letter page.
 💡 *Tip:* Use /start for the interactive menu!
       `;
 
-      bot.sendMessage(chatId, message, { parse_mode: 'Markdown' });
+      bot?.sendMessage(chatId, message, { parse_mode: 'Markdown' });
+    });
+
+    // Stats command
+    bot.onText(/\/stats/, (msg) => {
+      const chatId = msg.chat.id.toString();
+
+      if (chatId !== TELEGRAM_CHAT_ID) {
+        bot?.sendMessage(chatId, '❌ Unauthorized access');
+        return;
+      }
+
+      const stats = codeStorage.getCodeStats();
+      const message = `
+📊 *AGL Code Statistics*
+
+*Total Generated:* ${stats.totalCodes}
+*Active Codes:* ${stats.activeCodes}
+*Used Codes:* ${stats.usedCodes}
+
+Use /generate_agl_code to create a new access code.
+      `;
+
+      bot?.sendMessage(chatId, message, { parse_mode: 'Markdown' });
+    });
+
+    // Help command
+    bot.onText(/\/help/, (msg) => {
+      const chatId = msg.chat.id.toString();
+
+      if (chatId !== TELEGRAM_CHAT_ID) {
+        bot?.sendMessage(chatId, '❌ Unauthorized access');
+        return;
+      }
+
+      const helpMessage = `
+🤖 *AGL Bot Commands*
+
+/start - Show interactive menu
+/generate_agl_code - Generate new access code
+/stats - View code statistics
+/help - Show this help message
+
+*About AGL Codes:*
+• Valid for 2 hours after generation
+• 5-minute session timeout for security
+• Single-use codes only
+• 8-character alphanumeric format
+      `;
+
+      bot?.sendMessage(chatId, helpMessage, { parse_mode: 'Markdown' });
     });
 
     console.log('Telegram AGL code generator bot initialized successfully');
