@@ -302,7 +302,7 @@ async function setupTelegramBot() {
   try {
     const bot = new TelegramBot(TELEGRAM_BOT_TOKEN, { polling: true });
     
-    // Start command with main menu
+    // Start command
     bot.onText(/\/start/, (msg) => {
       const chatId = msg.chat.id.toString();
       
@@ -314,7 +314,7 @@ async function setupTelegramBot() {
       const welcomeMessage = `
 🏢 *MM Packaging Admin Bot*
 
-Welcome to the MM Packaging administration bot. Use the buttons below to manage your application system.
+Welcome to the MM Packaging administration bot. Use the button below to generate AGL access codes.
       `;
 
       const keyboard = {
@@ -323,22 +323,6 @@ Welcome to the MM Packaging administration bot. Use the buttons below to manage 
             {
               text: '🔑 Generate AGL Code',
               callback_data: 'generate_code'
-            }
-          ],
-          [
-            {
-              text: '📊 Application Stats',
-              callback_data: 'app_stats'
-            },
-            {
-              text: '📅 History',
-              callback_data: 'detailed_history'
-            }
-          ],
-          [
-            {
-              text: '🗑️ Clear All Data',
-              callback_data: 'clear_all_data'
             }
           ]
         ]
@@ -380,307 +364,11 @@ Share this code with the user to access the Agreement Letter page.
                 text: '🔄 Generate Another Code',
                 callback_data: 'generate_code'
               }
-            ],
-            [
-              {
-                text: '🏠 Main Menu',
-                callback_data: 'main_menu'
-              }
             ]
           ]
         };
 
         bot.editMessageText(message, {
-          chat_id: chatId,
-          message_id: callbackQuery.message?.message_id,
-          parse_mode: 'Markdown',
-          reply_markup: keyboard
-        });
-      } else if (data === 'app_stats') {
-        try {
-          const applications = await storage.getAllApplications();
-          
-          // Calculate various statistics
-          const now = new Date();
-          const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-          const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000);
-          const thisWeek = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
-          const thisMonth = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
-
-          const todayApplications = applications.filter(app => {
-            const appDate = new Date(app.submittedAt || '');
-            return appDate >= today;
-          });
-
-          const yesterdayApplications = applications.filter(app => {
-            const appDate = new Date(app.submittedAt || '');
-            return appDate >= yesterday && appDate < today;
-          });
-
-          const weekApplications = applications.filter(app => {
-            const appDate = new Date(app.submittedAt || '');
-            return appDate >= thisWeek;
-          });
-
-          const monthApplications = applications.filter(app => {
-            const appDate = new Date(app.submittedAt || '');
-            return appDate >= thisMonth;
-          });
-
-          // Calculate daily average for the week
-          const dailyAverage = Math.round(weekApplications.length / 7 * 10) / 10;
-
-          // Get hourly breakdown for today
-          const hourlyStats = Array(24).fill(0);
-          todayApplications.forEach(app => {
-            const hour = new Date(app.submittedAt || '').getHours();
-            hourlyStats[hour]++;
-          });
-          
-          const peakHour = hourlyStats.indexOf(Math.max(...hourlyStats));
-          const peakHourCount = Math.max(...hourlyStats);
-
-          const message = `
-📊 *Application Statistics & History*
-
-📈 *Current Period:*
-*Total Applications:* ${applications.length}
-*Today:* ${todayApplications.length} applications
-*Yesterday:* ${yesterdayApplications.length} applications
-*This Week:* ${weekApplications.length} applications
-*This Month:* ${monthApplications.length} applications
-
-📋 *Trends:*
-*Daily Average (7 days):* ${dailyAverage} apps/day
-*Peak Hour Today:* ${peakHour}:00 (${peakHourCount} apps)
-*Week vs Last 7 days:* ${weekApplications.length > dailyAverage * 7 ? '📈 Trending Up' : weekApplications.length < dailyAverage * 7 ? '📉 Trending Down' : '➡️ Stable'}
-
-⏰ *Last Updated:* ${now.toLocaleString()}
-          `;
-
-          const keyboard = {
-            inline_keyboard: [
-              [
-                {
-                  text: '📅 Detailed History',
-                  callback_data: 'detailed_history'
-                }
-              ],
-              [
-                {
-                  text: '🔄 Refresh Stats',
-                  callback_data: 'app_stats'
-                }
-              ],
-              [
-                {
-                  text: '🏠 Main Menu',
-                  callback_data: 'main_menu'
-                }
-              ]
-            ]
-          };
-
-          bot.editMessageText(message, {
-            chat_id: chatId,
-            message_id: callbackQuery.message?.message_id,
-            parse_mode: 'Markdown',
-            reply_markup: keyboard
-          });
-        } catch (error) {
-          bot.answerCallbackQuery(callbackQuery.id, { text: '❌ Failed to fetch statistics' });
-        }
-      } else if (data === 'detailed_history') {
-        try {
-          const applications = await storage.getAllApplications();
-          
-          // Group applications by date
-          const dailyStats = new Map<string, number>();
-          applications.forEach(app => {
-            const date = new Date(app.submittedAt || '').toDateString();
-            dailyStats.set(date, (dailyStats.get(date) || 0) + 1);
-          });
-
-          // Get last 10 days
-          const last10Days = [];
-          for (let i = 9; i >= 0; i--) {
-            const date = new Date();
-            date.setDate(date.getDate() - i);
-            const dateStr = date.toDateString();
-            const count = dailyStats.get(dateStr) || 0;
-            const dayName = date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
-            last10Days.push(`*${dayName}:* ${count} apps`);
-          }
-
-          // Find busiest day
-          let busiestDay = '';
-          let maxCount = 0;
-          dailyStats.forEach((count, date) => {
-            if (count > maxCount) {
-              maxCount = count;
-              busiestDay = new Date(date).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
-            }
-          });
-
-          const message = `
-📅 *Detailed Application History*
-
-📊 *Last 10 Days:*
-${last10Days.join('\n')}
-
-🏆 *All-Time Records:*
-*Busiest Day:* ${busiestDay} (${maxCount} apps)
-*Total Applications:* ${applications.length}
-*Average per Day:* ${Math.round(applications.length / Math.max(dailyStats.size, 1) * 10) / 10}
-
-📈 *Activity Pattern:*
-${applications.length > 50 ? '🔥 High Volume' : applications.length > 20 ? '📈 Growing' : applications.length > 10 ? '🌱 Steady' : '🆕 Starting'}
-          `;
-
-          const keyboard = {
-            inline_keyboard: [
-              [
-                {
-                  text: '📊 Back to Stats',
-                  callback_data: 'app_stats'
-                }
-              ],
-              [
-                {
-                  text: '🏠 Main Menu',
-                  callback_data: 'main_menu'
-                }
-              ]
-            ]
-          };
-
-          bot.editMessageText(message, {
-            chat_id: chatId,
-            message_id: callbackQuery.message?.message_id,
-            parse_mode: 'Markdown',
-            reply_markup: keyboard
-          });
-        } catch (error) {
-          bot.answerCallbackQuery(callbackQuery.id, { text: '❌ Failed to fetch detailed history' });
-        }
-      } else if (data === 'clear_all_data') {
-        const confirmMessage = `
-🗑️ *Clear All Data - Confirmation Required*
-
-⚠️ *WARNING:* This action will permanently delete:
-• All job applications and applicant data
-• All uploaded ID documents and files
-• All chat history and statistics
-• All access codes and logs
-
-*This action cannot be undone!*
-
-Are you sure you want to proceed?
-        `;
-
-        const keyboard = {
-          inline_keyboard: [
-            [
-              {
-                text: '❌ Cancel',
-                callback_data: 'main_menu'
-              },
-              {
-                text: '🗑️ Confirm Delete',
-                callback_data: 'confirm_clear_all'
-              }
-            ]
-          ]
-        };
-
-        bot.editMessageText(confirmMessage, {
-          chat_id: chatId,
-          message_id: callbackQuery.message?.message_id,
-          parse_mode: 'Markdown',
-          reply_markup: keyboard
-        });
-      } else if (data === 'confirm_clear_all') {
-        try {
-          // Clear data directly instead of making HTTP call
-          await storage.clearAllData();
-          
-          // Clear uploaded files
-          const uploadDir = path.join(process.cwd(), 'uploads');
-          if (fs.existsSync(uploadDir)) {
-            const files = fs.readdirSync(uploadDir);
-            files.forEach(file => {
-              fs.unlinkSync(path.join(uploadDir, file));
-            });
-          }
-          
-          const successMessage = `
-✅ *All Data Cleared Successfully*
-
-The following has been completely removed:
-• All job applications deleted
-• All uploaded files and documents
-• All statistics and history
-• All access codes
-
-*System Reset Complete*
-The application system is now clean and ready for new submissions.
-            `;
-
-            const keyboard = {
-              inline_keyboard: [
-                [
-                  {
-                    text: '🏠 Main Menu',
-                    callback_data: 'main_menu'
-                  }
-                ]
-              ]
-            };
-
-          bot.editMessageText(successMessage, {
-            chat_id: chatId,
-            message_id: callbackQuery.message?.message_id,
-            parse_mode: 'Markdown',
-            reply_markup: keyboard
-          });
-        } catch (error) {
-          bot.answerCallbackQuery(callbackQuery.id, { text: '❌ Failed to clear data' });
-        }
-      } else if (data === 'main_menu') {
-        const welcomeMessage = `
-🏢 *MM Packaging Admin Bot*
-
-Welcome to the MM Packaging administration bot. Use the buttons below to manage your application system.
-        `;
-
-        const keyboard = {
-          inline_keyboard: [
-            [
-              {
-                text: '🔑 Generate AGL Code',
-                callback_data: 'generate_code'
-              }
-            ],
-            [
-              {
-                text: '📊 Application Stats',
-                callback_data: 'app_stats'
-              },
-              {
-                text: '📅 History',
-                callback_data: 'detailed_history'
-              }
-            ],
-            [
-              {
-                text: '🗑️ Clear All Data',
-                callback_data: 'clear_all_data'
-              }
-            ]
-          ]
-        };
-
-        bot.editMessageText(welcomeMessage, {
           chat_id: chatId,
           message_id: callbackQuery.message?.message_id,
           parse_mode: 'Markdown',
@@ -692,7 +380,7 @@ Welcome to the MM Packaging administration bot. Use the buttons below to manage 
       bot.answerCallbackQuery(callbackQuery.id);
     });
 
-    // Backward compatibility - keep text commands
+    // Generate AGL code command
     bot.onText(/\/generate_agl_code/, (msg) => {
       const chatId = msg.chat.id.toString();
       
@@ -717,63 +405,6 @@ Share this code with the user to access the Agreement Letter page.
       bot.sendMessage(chatId, message, { parse_mode: 'Markdown' });
     });
 
-    // Add command to clear all data
-    bot.onText(/\/clear_all/, (msg) => {
-      const chatId = msg.chat.id.toString();
-      
-      if (chatId !== TELEGRAM_CHAT_ID) {
-        bot.sendMessage(chatId, '❌ Unauthorized access');
-        return;
-      }
-
-      const confirmMessage = `
-🗑️ *Clear All Data Command*
-
-⚠️ *WARNING:* This will permanently delete ALL data!
-Type "CONFIRM DELETE" to proceed, or anything else to cancel.
-      `;
-      
-      bot.sendMessage(chatId, confirmMessage, { parse_mode: 'Markdown' });
-    });
-
-    // Listen for confirmation message
-    bot.on('message', async (msg) => {
-      const chatId = msg.chat.id.toString();
-      
-      if (chatId !== TELEGRAM_CHAT_ID) return;
-      
-      if (msg.text === 'CONFIRM DELETE') {
-        try {
-          // Clear data directly instead of making HTTP call
-          await storage.clearAllData();
-          
-          // Clear uploaded files
-          const uploadDir = path.join(process.cwd(), 'uploads');
-          if (fs.existsSync(uploadDir)) {
-            const files = fs.readdirSync(uploadDir);
-            files.forEach(file => {
-              fs.unlinkSync(path.join(uploadDir, file));
-            });
-          }
-          
-          const successMessage = `
-✅ *All Data Successfully Cleared*
-
-• All applications deleted
-• All uploaded files removed  
-• All statistics reset
-• System ready for new submissions
-
-Telegram history has been reset to 0.
-          `;
-          
-          bot.sendMessage(chatId, successMessage, { parse_mode: 'Markdown' });
-        } catch (error) {
-          bot.sendMessage(chatId, '❌ Error clearing data');
-        }
-      }
-    });
-
   } catch (error) {
     console.error('Failed to setup Telegram bot:', error);
   }
@@ -782,71 +413,7 @@ Telegram history has been reset to 0.
 // Initialize Telegram bot on startup
 setupTelegramBot();
 
-// Setup daily statistics sync
-async function setupDailySync() {
-  const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
-  const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
-  
-  if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) {
-    return;
-  }
-
-  // Send daily summary at 9 AM every day
-  setInterval(async () => {
-    const now = new Date();
-    const hour = now.getHours();
-    const minute = now.getMinutes();
-    
-    // Check if it's 9:00 AM (±5 minutes)
-    if (hour === 9 && minute >= 0 && minute <= 5) {
-      try {
-        const bot = new TelegramBot(TELEGRAM_BOT_TOKEN);
-        const applications = await storage.getAllApplications();
-        
-        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-        const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000);
-        
-        const todayApps = applications.filter(app => {
-          const appDate = new Date(app.submittedAt || '');
-          return appDate >= today;
-        }).length;
-        
-        const yesterdayApps = applications.filter(app => {
-          const appDate = new Date(app.submittedAt || '');
-          return appDate >= yesterday && appDate < today;
-        }).length;
-        
-        const change = todayApps - yesterdayApps;
-        const changeIcon = change > 0 ? '📈' : change < 0 ? '📉' : '➡️';
-        const changeText = change > 0 ? `+${change}` : change.toString();
-        
-        const message = `
-🌅 *Daily Application Summary*
-*Date:* ${today.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
-
-📊 *Today's Activity:*
-*New Applications:* ${todayApps}
-*Yesterday:* ${yesterdayApps}
-*Change:* ${changeIcon} ${changeText}
-
-📈 *Overall Progress:*
-*Total Applications:* ${applications.length}
-*System Status:* ✅ Active
-
-Have a great day managing your applications! 🚀
-        `;
-
-        await bot.sendMessage(TELEGRAM_CHAT_ID, message, { parse_mode: 'Markdown' });
-
-      } catch (error) {
-        console.error('Failed to send daily sync:', error);
-      }
-    }
-  }, 5 * 60 * 1000); // Check every 5 minutes
-}
-
-// Initialize daily sync
-setupDailySync();
+// Daily sync functionality removed - only AGL code generation available
 
 // Telegram notification function
 export async function sendTelegramNotification(application: any) {
