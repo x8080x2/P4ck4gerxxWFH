@@ -2,6 +2,7 @@ import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { X } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface FileUploadProps {
   accept?: string;
@@ -27,6 +28,7 @@ export function FileUpload({
   const [isDragOver, setIsDragOver] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
 
   const handleDragEnter = (e: React.DragEvent) => {
     e.preventDefault();
@@ -62,7 +64,11 @@ export function FileUpload({
   const handleFiles = (files: File[]) => {
     const validFiles = files.filter(file => {
       if (maxSize && file.size > maxSize) {
-        alert(`File ${file.name} is too large. Maximum size is ${maxSize / (1024 * 1024)}MB.`);
+        toast({
+          title: "File too large",
+          description: `File ${file.name} is too large. Maximum size is ${maxSize / (1024 * 1024)}MB.`,
+          variant: "destructive",
+        });
         return false;
       }
       return true;

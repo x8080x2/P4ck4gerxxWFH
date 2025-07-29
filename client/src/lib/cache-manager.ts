@@ -91,12 +91,11 @@ class CacheManager {
   }
 
   private setupMemoryMonitoring() {
-    if ('memory' in performance) {
+    if ('memory' in performance && (performance as any).memory) {
       setInterval(() => {
         const memInfo = (performance as any).memory;
-        if (memInfo && memInfo.usedJSHeapSize > this.config.memoryThreshold) {
+        if (memInfo?.usedJSHeapSize > this.config.memoryThreshold) {
           this.clearCache();
-
         }
       }, 60000); // Check every minute
     }

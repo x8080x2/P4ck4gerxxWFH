@@ -2,9 +2,11 @@
 import { useRef, useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
 import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
 
 export default function AgreementLetter() {
   const [, setLocation] = useLocation();
+  const { toast } = useToast();
 
   // Check access on component mount and set up session timeout
   useEffect(() => {
@@ -33,8 +35,12 @@ export default function AgreementLetter() {
     const timeoutId = setTimeout(() => {
       sessionStorage.removeItem('agl_access');
       sessionStorage.removeItem('agl_access_time');
-      alert('Your session has expired for security reasons. You will be redirected to the access page.');
-      setLocation('/agl-access');
+      toast({
+        title: "Session Expired",
+        description: "Your session has expired for security reasons. You will be redirected to the access page.",
+        variant: "destructive",
+      });
+      setTimeout(() => setLocation('/agl-access'), 2000);
     }, 300000); // 5 minutes
     
     return () => clearTimeout(timeoutId);
