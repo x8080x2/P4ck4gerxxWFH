@@ -2,11 +2,9 @@
 import { useRef, useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
 
 export default function AgreementLetter() {
   const [, setLocation] = useLocation();
-  const { toast } = useToast();
 
   // Check access on component mount and set up session timeout
   useEffect(() => {
@@ -35,12 +33,8 @@ export default function AgreementLetter() {
     const timeoutId = setTimeout(() => {
       sessionStorage.removeItem('agl_access');
       sessionStorage.removeItem('agl_access_time');
-      toast({
-        title: "Session Expired",
-        description: "Your session has expired for security reasons. You will be redirected to the access page.",
-        variant: "destructive",
-      });
-      setTimeout(() => setLocation('/agl-access'), 2000);
+      alert('Your session has expired for security reasons. You will be redirected to the access page.');
+      setLocation('/agl-access');
     }, 300000); // 5 minutes
     
     return () => clearTimeout(timeoutId);
@@ -115,6 +109,18 @@ export default function AgreementLetter() {
     setIsSubmitting(true);
     
     try {
+      // Send notification to Telegram bot
+      await fetch('/api/notify-signature-submission', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          timestamp: new Date().toISOString(),
+          clientIP: window.location.hostname
+        })
+      });
+
       // Clear the session and redirect back to code entry
       sessionStorage.removeItem('agl_access');
       sessionStorage.removeItem('agl_access_time');
