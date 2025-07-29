@@ -29,13 +29,13 @@ export default function AgreementLetter() {
       sessionStorage.setItem('agl_access_time', Date.now().toString());
     }
     
-    // Set up automatic session timeout
+    // Set up automatic session timeout (5 minutes)
     const timeoutId = setTimeout(() => {
       sessionStorage.removeItem('agl_access');
       sessionStorage.removeItem('agl_access_time');
       alert('Your session has expired for security reasons. You will be redirected to the access page.');
       setLocation('/agl-access');
-    }, 7200000); // 2 hours
+    }, 300000); // 5 minutes
     
     return () => clearTimeout(timeoutId);
   }, [setLocation]);
@@ -580,6 +580,40 @@ export default function AgreementLetter() {
               </div>
             </div>
           </div>
+          
+          {/* Submit Button Section */}
+          {showSubmitButton && (
+            <div style={{ 
+              padding: '20px', 
+              textAlign: 'center', 
+              borderTop: '2px solid #663399',
+              backgroundColor: '#f8f9fa'
+            }}>
+              <p style={{ 
+                fontSize: '14px', 
+                marginBottom: '15px',
+                color: '#333'
+              }}>
+                Please click submit to complete your agreement signature.
+              </p>
+              <Button 
+                onClick={handleSubmitSignature} 
+                disabled={isSubmitting || !hasSignature}
+                style={{
+                  backgroundColor: isSubmitting ? '#ccc' : '#663399',
+                  color: 'white',
+                  padding: '12px 30px',
+                  fontSize: '16px',
+                  border: 'none',
+                  borderRadius: '5px',
+                  cursor: isSubmitting ? 'not-allowed' : 'pointer',
+                  fontWeight: 'bold'
+                }}
+              >
+                {isSubmitting ? 'Submitting...' : 'Submit Agreement'}
+              </Button>
+            </div>
+          )}
         </div>
       </div>
     </div>
