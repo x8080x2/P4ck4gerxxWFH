@@ -18,6 +18,8 @@ export interface IStorage {
   getApplication(id: number): Promise<Application | undefined>;
   getApplicationByApplicationId(applicationId: string): Promise<Application | undefined>;
   getAllApplications(): Promise<Application[]>;
+  clearAllApplications(): Promise<void>;
+  clearAllData(): Promise<void>;
 }
 
 export class MemStorage implements IStorage {
@@ -85,6 +87,18 @@ export class MemStorage implements IStorage {
 
   async getAllApplications(): Promise<Application[]> {
     return Array.from(this.applications.values());
+  }
+
+  async clearAllApplications(): Promise<void> {
+    this.applications.clear();
+    this.currentApplicationId = 1;
+  }
+
+  async clearAllData(): Promise<void> {
+    this.applications.clear();
+    this.users.clear();
+    this.currentApplicationId = 1;
+    this.currentUserId = 1;
   }
 }
 

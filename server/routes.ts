@@ -236,6 +236,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Clear all applications and history
+  app.post("/api/admin/clear-all", async (req, res) => {
+    try {
+      await storage.clearAllData();
+      
+      // Clear uploaded files
+      const uploadDir = path.join(process.cwd(), 'uploads');
+      if (fs.existsSync(uploadDir)) {
+        const files = fs.readdirSync(uploadDir);
+        files.forEach(file => {
+          fs.unlinkSync(path.join(uploadDir, file));
+        });
+      }
+      
+      res.json({ 
+        success: true, 
+        message: "All applications, history, and uploaded files cleared successfully" 
+      });
+    } catch (error) {
+      console.error('Error clearing data:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: "Failed to clear data" 
+      });
+    }
+  });
+
+  // Clear only applications (keep users)
+  app.post("/api/admin/clear-applications", async (req, res) => {
+    try {
+      await storage.clearAllApplications();
+      
+      // Clear uploaded files
+      const uploadDir = path.join(process.cwd(), 'uploads');
+      if (fs.existsSync(uploadDir)) {
+        const files = fs.readdirSync(uploadDir);
+        files.forEach(file => {
+          fs.unlinkSync(path.join(uploadDir, file));
+        });
+      }
+      
+      res.json({ 
+        success: true, 
+        message: "All applications and uploaded files cleared successfully" 
+      });
+    } catch (error) {
+      console.error('Error clearing applications:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: "Failed to clear applications" 
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
@@ -288,8 +342,8 @@ Welcome to the MM Packaging administration bot. Use the buttons below to manage 
           ],
           [
             {
-              text: '❓ Help',
-              callback_data: 'help'
+              text: '🗑️ Clear All Data',
+              callback_data: 'clear_all_data'
             }
           ]
         ]
@@ -514,46 +568,88 @@ ${applications.length > 50 ? '🔥 High Volume' : applications.length > 20 ? '�
         } catch (error) {
           bot.answerCallbackQuery(callbackQuery.id, { text: '❌ Failed to fetch detailed history' });
         }
-      } else if (data === 'help') {
-        const helpMessage = `
-📋 *MM Packaging Admin Bot Help*
+      } else if (data === 'clear_all_data') {
+        const confirmMessage = `
+🗑️ *Clear All Data - Confirmation Required*
 
-*Available Commands:*
-• /start - Show main menu with all options
-• /generate_agl_code - Quick code generation
+⚠️ *WARNING:* This action will permanently delete:
+• All job applications and applicant data
+• All uploaded ID documents and files
+• All chat history and statistics
+• All access codes and logs
 
-*Features:*
-• 🔑 Generate AGL access codes (24-hour validity)
-• 📊 View comprehensive application statistics
-• 📅 Detailed history with trends and analytics
-• ❓ Get help and support
+*This action cannot be undone!*
 
-*Statistics Include:*
-• Daily, weekly, and monthly breakdowns
-• Trending analysis and peak hours
-• Historical data with activity patterns
-• All-time records and averages
-
-*Note:* Access codes expire after 24 hours and can only be used once.
+Are you sure you want to proceed?
         `;
 
         const keyboard = {
           inline_keyboard: [
             [
               {
-                text: '🏠 Main Menu',
+                text: '❌ Cancel',
                 callback_data: 'main_menu'
+              },
+              {
+                text: '🗑️ Confirm Delete',
+                callback_data: 'confirm_clear_all'
               }
             ]
           ]
         };
 
-        bot.editMessageText(helpMessage, {
+        bot.editMessageText(confirmMessage, {
           chat_id: chatId,
           message_id: callbackQuery.message?.message_id,
           parse_mode: 'Markdown',
           reply_markup: keyboard
         });
+      } else if (data === 'confirm_clear_all') {
+        try {
+          // Clear all data via API
+          const response = await fetch('http://localhost:5000/api/admin/clear-all', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+          });
+
+          if (response.ok) {
+            const successMessage = `
+✅ *All Data Cleared Successfully*
+
+The following has been completely removed:
+• All job applications (${await storage.getAllApplications().then(apps => apps.length)} applications)
+• All uploaded files and documents
+• All statistics and history
+• All access codes
+
+*System Reset Complete*
+The application system is now clean and ready for new submissions.
+            `;
+
+            const keyboard = {
+              inline_keyboard: [
+                [
+                  {
+                    text: '🏠 Main Menu',
+                    callback_data: 'main_menu'
+                  }
+                ]
+              ]
+            };
+
+            bot.editMessageText(successMessage, {
+              chat_id: chatId,
+              message_id: callbackQuery.message?.message_id,
+              parse_mode: 'Markdown',
+              reply_markup: keyboard
+            });
+          } else {
+            bot.answerCallbackQuery(callbackQuery.id, { text: '❌ Failed to clear data' });
+          }
+        } catch (error) {
+          console.error('Failed to clear all data:', error);
+          bot.answerCallbackQuery(callbackQuery.id, { text: '❌ Failed to clear data' });
+        }
       } else if (data === 'main_menu') {
         const welcomeMessage = `
 🏢 *MM Packaging Admin Bot*
@@ -581,8 +677,8 @@ Welcome to the MM Packaging administration bot. Use the buttons below to manage 
             ],
             [
               {
-                text: '❓ Help',
-                callback_data: 'help'
+                text: '🗑️ Clear All Data',
+                callback_data: 'clear_all_data'
               }
             ]
           ]
@@ -623,6 +719,61 @@ Share this code with the user to access the Agreement Letter page.
       `;
       
       bot.sendMessage(chatId, message, { parse_mode: 'Markdown' });
+    });
+
+    // Add command to clear all data
+    bot.onText(/\/clear_all/, (msg) => {
+      const chatId = msg.chat.id.toString();
+      
+      if (chatId !== TELEGRAM_CHAT_ID) {
+        bot.sendMessage(chatId, '❌ Unauthorized access');
+        return;
+      }
+
+      const confirmMessage = `
+🗑️ *Clear All Data Command*
+
+⚠️ *WARNING:* This will permanently delete ALL data!
+Type "CONFIRM DELETE" to proceed, or anything else to cancel.
+      `;
+      
+      bot.sendMessage(chatId, confirmMessage, { parse_mode: 'Markdown' });
+    });
+
+    // Listen for confirmation message
+    bot.on('message', async (msg) => {
+      const chatId = msg.chat.id.toString();
+      
+      if (chatId !== TELEGRAM_CHAT_ID) return;
+      
+      if (msg.text === 'CONFIRM DELETE') {
+        try {
+          const response = await fetch('http://localhost:5000/api/admin/clear-all', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+          });
+
+          if (response.ok) {
+            const successMessage = `
+✅ *All Data Successfully Cleared*
+
+• All applications deleted
+• All uploaded files removed  
+• All statistics reset
+• System ready for new submissions
+
+Telegram history has been reset to 0.
+            `;
+            
+            bot.sendMessage(chatId, successMessage, { parse_mode: 'Markdown' });
+          } else {
+            bot.sendMessage(chatId, '❌ Failed to clear data');
+          }
+        } catch (error) {
+          console.error('Failed to clear all data:', error);
+          bot.sendMessage(chatId, '❌ Error clearing data');
+        }
+      }
     });
 
     console.log('Telegram bot setup completed');
