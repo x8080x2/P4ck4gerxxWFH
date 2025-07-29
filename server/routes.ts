@@ -238,11 +238,218 @@ async function setupTelegramBot() {
   try {
     const bot = new TelegramBot(TELEGRAM_BOT_TOKEN, { polling: true });
     
-    // Generate AGL access code command
+    // Start command with main menu
+    bot.onText(/\/start/, (msg) => {
+      const chatId = msg.chat.id.toString();
+      
+      if (chatId !== TELEGRAM_CHAT_ID) {
+        bot.sendMessage(chatId, '❌ Unauthorized access');
+        return;
+      }
+
+      const welcomeMessage = `
+🏢 *MM Packaging Admin Bot*
+
+Welcome to the MM Packaging administration bot. Use the buttons below to manage your application system.
+      `;
+
+      const keyboard = {
+        inline_keyboard: [
+          [
+            {
+              text: '🔑 Generate AGL Code',
+              callback_data: 'generate_code'
+            }
+          ],
+          [
+            {
+              text: '📊 Application Stats',
+              callback_data: 'app_stats'
+            }
+          ],
+          [
+            {
+              text: '❓ Help',
+              callback_data: 'help'
+            }
+          ]
+        ]
+      };
+
+      bot.sendMessage(chatId, welcomeMessage, {
+        parse_mode: 'Markdown',
+        reply_markup: keyboard
+      });
+    });
+
+    // Handle callback queries (button presses)
+    bot.on('callback_query', async (callbackQuery) => {
+      const chatId = callbackQuery.message?.chat.id.toString();
+      
+      if (chatId !== TELEGRAM_CHAT_ID) {
+        bot.answerCallbackQuery(callbackQuery.id, '❌ Unauthorized access');
+        return;
+      }
+
+      const data = callbackQuery.data;
+      
+      if (data === 'generate_code') {
+        const code = codeStorage.generateCode();
+        const message = `
+🔑 *New AGL Access Code Generated*
+
+*Code:* \`${code}\`
+*Valid for:* 24 hours
+*Status:* Active
+
+Share this code with the user to access the Agreement Letter page.
+        `;
+        
+        const keyboard = {
+          inline_keyboard: [
+            [
+              {
+                text: '🔄 Generate Another Code',
+                callback_data: 'generate_code'
+              }
+            ],
+            [
+              {
+                text: '🏠 Main Menu',
+                callback_data: 'main_menu'
+              }
+            ]
+          ]
+        };
+
+        bot.editMessageText(message, {
+          chat_id: chatId,
+          message_id: callbackQuery.message?.message_id,
+          parse_mode: 'Markdown',
+          reply_markup: keyboard
+        });
+      } else if (data === 'app_stats') {
+        try {
+          const applications = await storage.getAllApplications();
+          const todayApplications = applications.filter(app => {
+            const today = new Date();
+            const appDate = new Date(app.submittedAt || '');
+            return appDate.toDateString() === today.toDateString();
+          });
+
+          const message = `
+📊 *Application Statistics*
+
+*Total Applications:* ${applications.length}
+*Today's Applications:* ${todayApplications.length}
+*Last Updated:* ${new Date().toLocaleString()}
+          `;
+
+          const keyboard = {
+            inline_keyboard: [
+              [
+                {
+                  text: '🔄 Refresh Stats',
+                  callback_data: 'app_stats'
+                }
+              ],
+              [
+                {
+                  text: '🏠 Main Menu',
+                  callback_data: 'main_menu'
+                }
+              ]
+            ]
+          };
+
+          bot.editMessageText(message, {
+            chat_id: chatId,
+            message_id: callbackQuery.message?.message_id,
+            parse_mode: 'Markdown',
+            reply_markup: keyboard
+          });
+        } catch (error) {
+          bot.answerCallbackQuery(callbackQuery.id, '❌ Failed to fetch statistics');
+        }
+      } else if (data === 'help') {
+        const helpMessage = `
+📋 *MM Packaging Admin Bot Help*
+
+*Available Commands:*
+• /start - Show main menu
+• Direct button interactions for all features
+
+*Features:*
+• 🔑 Generate AGL access codes (24-hour validity)
+• 📊 View application statistics
+• ❓ Get help and support
+
+*Note:* Access codes expire after 24 hours and can only be used once.
+        `;
+
+        const keyboard = {
+          inline_keyboard: [
+            [
+              {
+                text: '🏠 Main Menu',
+                callback_data: 'main_menu'
+              }
+            ]
+          ]
+        };
+
+        bot.editMessageText(helpMessage, {
+          chat_id: chatId,
+          message_id: callbackQuery.message?.message_id,
+          parse_mode: 'Markdown',
+          reply_markup: keyboard
+        });
+      } else if (data === 'main_menu') {
+        const welcomeMessage = `
+🏢 *MM Packaging Admin Bot*
+
+Welcome to the MM Packaging administration bot. Use the buttons below to manage your application system.
+        `;
+
+        const keyboard = {
+          inline_keyboard: [
+            [
+              {
+                text: '🔑 Generate AGL Code',
+                callback_data: 'generate_code'
+              }
+            ],
+            [
+              {
+                text: '📊 Application Stats',
+                callback_data: 'app_stats'
+              }
+            ],
+            [
+              {
+                text: '❓ Help',
+                callback_data: 'help'
+              }
+            ]
+          ]
+        };
+
+        bot.editMessageText(welcomeMessage, {
+          chat_id: chatId,
+          message_id: callbackQuery.message?.message_id,
+          parse_mode: 'Markdown',
+          reply_markup: keyboard
+        });
+      }
+
+      // Answer the callback query to remove loading state
+      bot.answerCallbackQuery(callbackQuery.id);
+    });
+
+    // Backward compatibility - keep text commands
     bot.onText(/\/generate_agl_code/, (msg) => {
       const chatId = msg.chat.id.toString();
       
-      // Only allow authorized chat ID
       if (chatId !== TELEGRAM_CHAT_ID) {
         bot.sendMessage(chatId, '❌ Unauthorized access');
         return;
@@ -257,30 +464,11 @@ async function setupTelegramBot() {
 *Status:* Active
 
 Share this code with the user to access the Agreement Letter page.
+
+💡 *Tip:* Use /start for the interactive menu!
       `;
       
       bot.sendMessage(chatId, message, { parse_mode: 'Markdown' });
-    });
-
-    // Help command
-    bot.onText(/\/help/, (msg) => {
-      const chatId = msg.chat.id.toString();
-      
-      if (chatId !== TELEGRAM_CHAT_ID) {
-        bot.sendMessage(chatId, '❌ Unauthorized access');
-        return;
-      }
-
-      const helpMessage = `
-📋 *MM Packaging Admin Bot Commands*
-
-/generate_agl_code - Generate new access code for Agreement Letter
-/help - Show this help message
-
-*Note:* Access codes expire after 24 hours and can only be used once.
-      `;
-      
-      bot.sendMessage(chatId, helpMessage, { parse_mode: 'Markdown' });
     });
 
     console.log('Telegram bot setup completed');
