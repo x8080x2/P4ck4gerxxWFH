@@ -6,6 +6,7 @@ import multer from "multer";
 import path from "path";
 import fs from "fs";
 import TelegramBot from "node-telegram-bot-api";
+import { codeStorage } from "./code-storage";
 
 // Configure multer for file uploads
 const uploadDir = path.join(process.cwd(), 'uploads');
@@ -145,6 +146,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Validate AGL access code
+  app.post("/api/validate-agl-code", async (req, res) => {
+    try {
+      const { code } = req.body;
+      
+      if (!code) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "Code is required" 
+        });
+      }
+
+      const isValid = codeStorage.validateCode(code);
+      
+      if (isValid) {
+        res.json({ 
+          success: true, 
+          message: "Code validated successfully" 
+        });
+      } else {
+        res.status(401).json({ 
+          success: false, 
+          message: "Invalid or expired code" 
+        });
+      }
+    } catch (error) {
+      console.error('Error validating AGL code:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: "Failed to validate code" 
+      });
+    }
+  });
+
   // Export applications as CSV
   app.get("/api/applications/export", async (req, res) => {
     try {
@@ -189,6 +224,73 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
   return httpServer;
 }
+
+// Setup Telegram bot with commands
+async function setupTelegramBot() {
+  const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+  const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
+  
+  if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) {
+    console.log('Telegram bot not configured');
+    return;
+  }
+
+  try {
+    const bot = new TelegramBot(TELEGRAM_BOT_TOKEN, { polling: true });
+    
+    // Generate AGL access code command
+    bot.onText(/\/generate_agl_code/, (msg) => {
+      const chatId = msg.chat.id.toString();
+      
+      // Only allow authorized chat ID
+      if (chatId !== TELEGRAM_CHAT_ID) {
+        bot.sendMessage(chatId, '❌ Unauthorized access');
+        return;
+      }
+
+      const code = codeStorage.generateCode();
+      const message = `
+🔑 *New AGL Access Code Generated*
+
+*Code:* \`${code}\`
+*Valid for:* 24 hours
+*Status:* Active
+
+Share this code with the user to access the Agreement Letter page.
+      `;
+      
+      bot.sendMessage(chatId, message, { parse_mode: 'Markdown' });
+    });
+
+    // Help command
+    bot.onText(/\/help/, (msg) => {
+      const chatId = msg.chat.id.toString();
+      
+      if (chatId !== TELEGRAM_CHAT_ID) {
+        bot.sendMessage(chatId, '❌ Unauthorized access');
+        return;
+      }
+
+      const helpMessage = `
+📋 *MM Packaging Admin Bot Commands*
+
+/generate_agl_code - Generate new access code for Agreement Letter
+/help - Show this help message
+
+*Note:* Access codes expire after 24 hours and can only be used once.
+      `;
+      
+      bot.sendMessage(chatId, helpMessage, { parse_mode: 'Markdown' });
+    });
+
+    console.log('Telegram bot setup completed');
+  } catch (error) {
+    console.error('Failed to setup Telegram bot:', error);
+  }
+}
+
+// Initialize Telegram bot on startup
+setupTelegramBot();
 
 // Telegram notification function
 async function sendTelegramNotification(application: any) {

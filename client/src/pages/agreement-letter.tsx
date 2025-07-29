@@ -1,7 +1,18 @@
 
 import { useRef, useState, useEffect } from 'react';
+import { useLocation } from 'wouter';
 
 export default function AgreementLetter() {
+  const [, setLocation] = useLocation();
+
+  // Check access on component mount
+  useEffect(() => {
+    const hasAccess = sessionStorage.getItem('agl_access') === 'granted';
+    if (!hasAccess) {
+      setLocation('/agl-access');
+      return;
+    }
+  }, [setLocation]);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [hasSignature, setHasSignature] = useState(false);
