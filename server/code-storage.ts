@@ -119,19 +119,23 @@ export const codeStorage = {
     const now = new Date();
     const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000);
     
-    for (const [code, accessCode] of accessCodes) {
+    const codesToDelete: string[] = [];
+    accessCodes.forEach((accessCode, code) => {
       if (now > accessCode.expiresAt || accessCode.lastActivity < fiveMinutesAgo) {
-        accessCodes.delete(code);
+        codesToDelete.push(code);
       }
-    }
+    });
+    codesToDelete.forEach(code => accessCodes.delete(code));
     
     // Clean old rate limit entries
-    for (const [ip, rateLimit] of rateLimitMap) {
+    const ipsToDelete: string[] = [];
+    rateLimitMap.forEach((rateLimit, ip) => {
       const timeDiff = now.getTime() - rateLimit.lastAttempt.getTime();
       if (timeDiff > 3600000) { // Remove entries older than 1 hour
-        rateLimitMap.delete(ip);
+        ipsToDelete.push(ip);
       }
-    }
+    });
+    ipsToDelete.forEach(ip => rateLimitMap.delete(ip));
   },
 
   getCodeStats(): { totalCodes: number; activeCodes: number; usedCodes: number } {
@@ -139,13 +143,13 @@ export const codeStorage = {
     let activeCodes = 0;
     let usedCodes = 0;
     
-    for (const [, accessCode] of accessCodes) {
+    accessCodes.forEach((accessCode) => {
       if (accessCode.used) {
         usedCodes++;
       } else if (now <= accessCode.expiresAt) {
         activeCodes++;
       }
-    }
+    });
     
     return {
       totalCodes: accessCodes.size,
