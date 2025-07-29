@@ -6,7 +6,7 @@ This is a full-stack web application built for MM Packaging to handle work-from-
 
 ## Recent Changes
 
-**July 29, 2025**: Successfully completed migration from Replit Agent to standard Replit environment. Fixed TypeScript errors in Telegram bot routes, verified all components working properly, and confirmed production deployment on Render with active Telegram integration.
+**July 29, 2025**: Successfully completed migration from Replit Agent to standard Replit environment. Fixed TypeScript errors in Telegram bot routes, verified all components working properly, and confirmed production deployment on Render with active Telegram integration. Added intelligent auto cache clearing functionality that automatically manages browser and query cache to improve performance and prevent memory issues.
 
 **July 25, 2025**: Successfully migrated project from Replit Agent to standard Replit environment. Fixed tsx dependency issue and verified full application functionality including form submissions, email notifications, and database operations.
 
@@ -73,6 +73,13 @@ The application uses a single `applications` table storing:
 - Responsive design with mobile-first approach
 - Accessible form controls and navigation
 - Toast notifications for user feedback
+
+### Cache Management System
+- Intelligent auto cache clearing (every 30 minutes)
+- Idle cleanup when user inactive for 10+ minutes
+- Memory threshold monitoring and cleanup
+- Selective storage clearing (preserves user data)
+- Browser cache management via Service Worker
 
 ## Data Flow
 
