@@ -99,17 +99,17 @@ export default function AgreementLetter() {
           
           <div style={{ display: 'flex', marginBottom: '8px', alignItems: 'flex-start' }}>
             <div style={{ width: '180px', fontWeight: 'bold', fontSize: '10px', paddingRight: '8px', flexShrink: 0 }}>Contractor Name:</div>
-            <div style={{ flex: 1, borderBottom: '1px solid #000', minHeight: '16px', paddingLeft: '3px', fontSize: '10px' }}></div>
+            <div style={{ flex: 1, borderBottom: '1px solid #000', minHeight: '16px', paddingLeft: '3px', fontSize: '10px' }}>EEEEEe</div>
           </div>
           
           <div style={{ display: 'flex', marginBottom: '8px', alignItems: 'flex-start' }}>
             <div style={{ width: '180px', fontWeight: 'bold', fontSize: '10px', paddingRight: '8px', flexShrink: 0 }}>Agreement Effective Date:</div>
-            <div style={{ flex: 1, borderBottom: '1px solid #000', minHeight: '16px', paddingLeft: '3px', fontSize: '10px' }}></div>
+            <div style={{ flex: 1, borderBottom: '1px solid #000', minHeight: '6px', paddingLeft: '3px', fontSize: '10px' }}>{new Date().toLocaleDateString()}</div>
           </div>
           
           <div style={{ display: 'flex', marginBottom: '8px', alignItems: 'flex-start' }}>
             <div style={{ width: '180px', fontWeight: 'bold', fontSize: '10px', paddingRight: '8px', flexShrink: 0 }}>Start Date:</div>
-            <div style={{ flex: 1, borderBottom: '1px solid #000', minHeight: '16px', paddingLeft: '3px', fontSize: '10px' }}>TBD</div>
+            <div style={{ flex: 1, borderBottom: '1px solid #000', minHeight: '6px', paddingLeft: '3px', fontSize: '10px' }}>TBD</div>
           </div>
           
           <div style={{ backgroundColor: '#e0e0e0', padding: '8px', fontWeight: 'bold', fontSize: '12px', margin: '15px -15px 10px -15px', borderTop: '2px solid #000', borderBottom: '1px solid #000', letterSpacing: '0.5px' }}>POSITION & RESPONSIBILITIES</div>
@@ -505,14 +505,14 @@ export default function AgreementLetter() {
                     )}
                   </div>
                 </div>
-                <div style={{ textAlign: 'right', fontSize: '9px' }}>APPLICANT DATE & SIGNATURE</div>
+                <div style={{ textAlign: 'right', fontSize: '9px' }}>SIGNATURE</div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '9px' }}>
                   <div>
                     <div style={{ fontWeight: 'bold' }}>NAME: _______________</div>
                     <div>Date: {new Date().toLocaleDateString()}</div>
                   </div>
                 </div>
-                <div style={{ fontSize: '8px', marginTop: '4px' }}>MM. REMOTE INDEPENDENT PACKAGING CONTRACTOR</div>
+                <div style={{ fontSize: '10px', marginTop: '4px' }}>MM. REMOTE INDEPENDENT PACKAGING CONTRACTOR</div>
               </div>
             </div>
           </div>
