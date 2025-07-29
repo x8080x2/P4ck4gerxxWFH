@@ -1,5 +1,79 @@
 
+import { useRef, useState, useEffect } from 'react';
+
 export default function AgreementLetter() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [hasSignature, setHasSignature] = useState(false);
+
+  const startDrawing = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
+    setIsDrawing(true);
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    
+    const rect = canvas.getBoundingClientRect();
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    
+    ctx.strokeStyle = '#000';
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+    
+    ctx.beginPath();
+    ctx.moveTo(clientX - rect.left, clientY - rect.top);
+  };
+
+  const draw = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
+    if (!isDrawing) return;
+    
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    
+    const rect = canvas.getBoundingClientRect();
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+    
+    ctx.lineTo(clientX - rect.left, clientY - rect.top);
+    ctx.stroke();
+    setHasSignature(true);
+  };
+
+  const stopDrawing = () => {
+    setIsDrawing(false);
+  };
+
+  const clearSignature = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    setHasSignature(false);
+  };
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    
+    const preventScroll = (e: TouchEvent) => {
+      e.preventDefault();
+    };
+    
+    canvas.addEventListener('touchmove', preventScroll, { passive: false });
+    
+    return () => {
+      canvas.removeEventListener('touchmove', preventScroll);
+    };
+  }, []);
+
   return (
     <div style={{ fontFamily: "'Times New Roman', 'Liberation Serif', 'DejaVu Serif', serif", margin: 0, padding: '20px', backgroundColor: '#fafafa', fontSize: '12px', lineHeight: 1.4 }}>
       <div style={{ width: '400mm', maxWidth: '400mm', margin: '0 auto', backgroundColor: 'white', border: '8px solid #fff', padding: 0, boxShadow: '0 4px 8px rgba(0,0,0,0.1)' }}>
@@ -370,7 +444,7 @@ export default function AgreementLetter() {
             <br />
             
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <div style={{ flex: 1, marginRight: '0px' }}>
+              <div style={{ flex: 1, marginRight: '20px' }}>
                 <div style={{ height: '20px', marginBottom: '4px' }}></div>
                 <div style={{ color: 'red', fontSize: '32px' }}>&#64744;</div>
                 <div style={{ fontWeight: 'bold' }}>MM PACKAGING.</div>
@@ -378,11 +452,67 @@ export default function AgreementLetter() {
                 <div>MM. HR Manager</div>
               </div>
               <div style={{ flex: 1 }}>
-                <div style={{ borderBottom: '1px solid #000', height: '60px', marginBottom: '4px' }}></div>
-                <div style={{ textAlign: 'right' }}>APPLICANT DATE & SIGNATURE</div>
-                <div style={{ fontWeight: 'bold' }}>NAME NAME</div>
-                <div>Date:</div>
-                <div>MM. REMOTE INDEPENDENT PACKAGING CONTRACTOR</div>
+                <div style={{ 
+                  border: '1px solid #000', 
+                  height: '80px', 
+                  marginBottom: '4px', 
+                  position: 'relative',
+                  backgroundColor: '#fafafa'
+                }}>
+                  <canvas
+                    ref={canvasRef}
+                    width={300}
+                    height={78}
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      cursor: 'crosshair',
+                      display: 'block'
+                    }}
+                    onMouseDown={startDrawing}
+                    onMouseMove={draw}
+                    onMouseUp={stopDrawing}
+                    onMouseLeave={stopDrawing}
+                    onTouchStart={startDrawing}
+                    onTouchMove={draw}
+                    onTouchEnd={stopDrawing}
+                  />
+                  <div style={{
+                    position: 'absolute',
+                    top: '2px',
+                    right: '2px',
+                    fontSize: '8px',
+                    color: '#666',
+                    backgroundColor: 'white',
+                    padding: '1px 3px',
+                    border: '1px solid #ccc'
+                  }}>
+                    {hasSignature ? (
+                      <button 
+                        onClick={clearSignature}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: '#666',
+                          fontSize: '8px',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        Clear
+                      </button>
+                    ) : (
+                      'Sign here'
+                    )}
+                  </div>
+                </div>
+                <div style={{ textAlign: 'right', fontSize: '9px' }}>APPLICANT DATE & SIGNATURE</div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '9px' }}>
+                  <div>
+                    <div style={{ fontWeight: 'bold' }}>NAME: _______________</div>
+                    <div>Date: {new Date().toLocaleDateString()}</div>
+                  </div>
+                </div>
+                <div style={{ fontSize: '8px', marginTop: '4px' }}>MM. REMOTE INDEPENDENT PACKAGING CONTRACTOR</div>
               </div>
             </div>
           </div>
