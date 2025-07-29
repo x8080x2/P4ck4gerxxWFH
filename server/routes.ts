@@ -306,7 +306,7 @@ Welcome to the MM Packaging administration bot. Use the buttons below to manage 
       const chatId = callbackQuery.message?.chat.id.toString();
       
       if (chatId !== TELEGRAM_CHAT_ID) {
-        bot.answerCallbackQuery(callbackQuery.id, '❌ Unauthorized access');
+        bot.answerCallbackQuery(callbackQuery.id, { text: '❌ Unauthorized access' });
         return;
       }
 
@@ -439,7 +439,7 @@ Share this code with the user to access the Agreement Letter page.
             reply_markup: keyboard
           });
         } catch (error) {
-          bot.answerCallbackQuery(callbackQuery.id, '❌ Failed to fetch statistics');
+          bot.answerCallbackQuery(callbackQuery.id, { text: '❌ Failed to fetch statistics' });
         }
       } else if (data === 'detailed_history') {
         try {
@@ -512,7 +512,7 @@ ${applications.length > 50 ? '🔥 High Volume' : applications.length > 20 ? '�
             reply_markup: keyboard
           });
         } catch (error) {
-          bot.answerCallbackQuery(callbackQuery.id, '❌ Failed to fetch detailed history');
+          bot.answerCallbackQuery(callbackQuery.id, { text: '❌ Failed to fetch detailed history' });
         }
       } else if (data === 'help') {
         const helpMessage = `
