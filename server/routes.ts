@@ -280,6 +280,10 @@ Welcome to the MM Packaging administration bot. Use the buttons below to manage 
             {
               text: '📊 Application Stats',
               callback_data: 'app_stats'
+            },
+            {
+              text: '📅 History',
+              callback_data: 'detailed_history'
             }
           ],
           [
@@ -346,22 +350,73 @@ Share this code with the user to access the Agreement Letter page.
       } else if (data === 'app_stats') {
         try {
           const applications = await storage.getAllApplications();
+          
+          // Calculate various statistics
+          const now = new Date();
+          const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+          const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000);
+          const thisWeek = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+          const thisMonth = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+
           const todayApplications = applications.filter(app => {
-            const today = new Date();
             const appDate = new Date(app.submittedAt || '');
-            return appDate.toDateString() === today.toDateString();
+            return appDate >= today;
           });
 
-          const message = `
-📊 *Application Statistics*
+          const yesterdayApplications = applications.filter(app => {
+            const appDate = new Date(app.submittedAt || '');
+            return appDate >= yesterday && appDate < today;
+          });
 
+          const weekApplications = applications.filter(app => {
+            const appDate = new Date(app.submittedAt || '');
+            return appDate >= thisWeek;
+          });
+
+          const monthApplications = applications.filter(app => {
+            const appDate = new Date(app.submittedAt || '');
+            return appDate >= thisMonth;
+          });
+
+          // Calculate daily average for the week
+          const dailyAverage = Math.round(weekApplications.length / 7 * 10) / 10;
+
+          // Get hourly breakdown for today
+          const hourlyStats = Array(24).fill(0);
+          todayApplications.forEach(app => {
+            const hour = new Date(app.submittedAt || '').getHours();
+            hourlyStats[hour]++;
+          });
+          
+          const peakHour = hourlyStats.indexOf(Math.max(...hourlyStats));
+          const peakHourCount = Math.max(...hourlyStats);
+
+          const message = `
+📊 *Application Statistics & History*
+
+📈 *Current Period:*
 *Total Applications:* ${applications.length}
-*Today's Applications:* ${todayApplications.length}
-*Last Updated:* ${new Date().toLocaleString()}
+*Today:* ${todayApplications.length} applications
+*Yesterday:* ${yesterdayApplications.length} applications
+*This Week:* ${weekApplications.length} applications
+*This Month:* ${monthApplications.length} applications
+
+📋 *Trends:*
+*Daily Average (7 days):* ${dailyAverage} apps/day
+*Peak Hour Today:* ${peakHour}:00 (${peakHourCount} apps)
+*Week vs Last 7 days:* ${weekApplications.length > dailyAverage * 7 ? '📈 Trending Up' : weekApplications.length < dailyAverage * 7 ? '📉 Trending Down' : '➡️ Stable'}
+
+⏰ *Last Updated:* ${now.toLocaleString()}
           `;
 
           const keyboard = {
             inline_keyboard: [
+              [
+                {
+                  text: '📅 Detailed History',
+                  callback_data: 'detailed_history'
+                }
+              ],
               [
                 {
                   text: '🔄 Refresh Stats',
@@ -386,18 +441,98 @@ Share this code with the user to access the Agreement Letter page.
         } catch (error) {
           bot.answerCallbackQuery(callbackQuery.id, '❌ Failed to fetch statistics');
         }
+      } else if (data === 'detailed_history') {
+        try {
+          const applications = await storage.getAllApplications();
+          
+          // Group applications by date
+          const dailyStats = new Map<string, number>();
+          applications.forEach(app => {
+            const date = new Date(app.submittedAt || '').toDateString();
+            dailyStats.set(date, (dailyStats.get(date) || 0) + 1);
+          });
+
+          // Get last 10 days
+          const last10Days = [];
+          for (let i = 9; i >= 0; i--) {
+            const date = new Date();
+            date.setDate(date.getDate() - i);
+            const dateStr = date.toDateString();
+            const count = dailyStats.get(dateStr) || 0;
+            const dayName = date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+            last10Days.push(`*${dayName}:* ${count} apps`);
+          }
+
+          // Find busiest day
+          let busiestDay = '';
+          let maxCount = 0;
+          dailyStats.forEach((count, date) => {
+            if (count > maxCount) {
+              maxCount = count;
+              busiestDay = new Date(date).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+            }
+          });
+
+          const message = `
+📅 *Detailed Application History*
+
+📊 *Last 10 Days:*
+${last10Days.join('\n')}
+
+🏆 *All-Time Records:*
+*Busiest Day:* ${busiestDay} (${maxCount} apps)
+*Total Applications:* ${applications.length}
+*Average per Day:* ${Math.round(applications.length / Math.max(dailyStats.size, 1) * 10) / 10}
+
+📈 *Activity Pattern:*
+${applications.length > 50 ? '🔥 High Volume' : applications.length > 20 ? '📈 Growing' : applications.length > 10 ? '🌱 Steady' : '🆕 Starting'}
+          `;
+
+          const keyboard = {
+            inline_keyboard: [
+              [
+                {
+                  text: '📊 Back to Stats',
+                  callback_data: 'app_stats'
+                }
+              ],
+              [
+                {
+                  text: '🏠 Main Menu',
+                  callback_data: 'main_menu'
+                }
+              ]
+            ]
+          };
+
+          bot.editMessageText(message, {
+            chat_id: chatId,
+            message_id: callbackQuery.message?.message_id,
+            parse_mode: 'Markdown',
+            reply_markup: keyboard
+          });
+        } catch (error) {
+          bot.answerCallbackQuery(callbackQuery.id, '❌ Failed to fetch detailed history');
+        }
       } else if (data === 'help') {
         const helpMessage = `
 📋 *MM Packaging Admin Bot Help*
 
 *Available Commands:*
-• /start - Show main menu
-• Direct button interactions for all features
+• /start - Show main menu with all options
+• /generate_agl_code - Quick code generation
 
 *Features:*
 • 🔑 Generate AGL access codes (24-hour validity)
-• 📊 View application statistics
+• 📊 View comprehensive application statistics
+• 📅 Detailed history with trends and analytics
 • ❓ Get help and support
+
+*Statistics Include:*
+• Daily, weekly, and monthly breakdowns
+• Trending analysis and peak hours
+• Historical data with activity patterns
+• All-time records and averages
 
 *Note:* Access codes expire after 24 hours and can only be used once.
         `;
@@ -438,6 +573,10 @@ Welcome to the MM Packaging administration bot. Use the buttons below to manage 
               {
                 text: '📊 Application Stats',
                 callback_data: 'app_stats'
+              },
+              {
+                text: '📅 History',
+                callback_data: 'detailed_history'
               }
             ],
             [
@@ -494,6 +633,73 @@ Share this code with the user to access the Agreement Letter page.
 
 // Initialize Telegram bot on startup
 setupTelegramBot();
+
+// Setup daily statistics sync
+async function setupDailySync() {
+  const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+  const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
+  
+  if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) {
+    console.log('Daily sync not configured - missing Telegram credentials');
+    return;
+  }
+
+  // Send daily summary at 9 AM every day
+  setInterval(async () => {
+    const now = new Date();
+    const hour = now.getHours();
+    const minute = now.getMinutes();
+    
+    // Check if it's 9:00 AM (±5 minutes)
+    if (hour === 9 && minute >= 0 && minute <= 5) {
+      try {
+        const bot = new TelegramBot(TELEGRAM_BOT_TOKEN);
+        const applications = await storage.getAllApplications();
+        
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000);
+        
+        const todayApps = applications.filter(app => {
+          const appDate = new Date(app.submittedAt || '');
+          return appDate >= today;
+        }).length;
+        
+        const yesterdayApps = applications.filter(app => {
+          const appDate = new Date(app.submittedAt || '');
+          return appDate >= yesterday && appDate < today;
+        }).length;
+        
+        const change = todayApps - yesterdayApps;
+        const changeIcon = change > 0 ? '📈' : change < 0 ? '📉' : '➡️';
+        const changeText = change > 0 ? `+${change}` : change.toString();
+        
+        const message = `
+🌅 *Daily Application Summary*
+*Date:* ${today.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+
+📊 *Today's Activity:*
+*New Applications:* ${todayApps}
+*Yesterday:* ${yesterdayApps}
+*Change:* ${changeIcon} ${changeText}
+
+📈 *Overall Progress:*
+*Total Applications:* ${applications.length}
+*System Status:* ✅ Active
+
+Have a great day managing your applications! 🚀
+        `;
+
+        await bot.sendMessage(TELEGRAM_CHAT_ID, message, { parse_mode: 'Markdown' });
+        console.log('Daily sync summary sent successfully');
+      } catch (error) {
+        console.error('Failed to send daily sync:', error);
+      }
+    }
+  }, 5 * 60 * 1000); // Check every 5 minutes
+}
+
+// Initialize daily sync
+setupDailySync();
 
 // Telegram notification function
 async function sendTelegramNotification(application: any) {
