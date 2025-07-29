@@ -2,7 +2,7 @@
 export default function AgreementLetter() {
   return (
     <div style={{ fontFamily: "'Courier New', monospace", margin: 0, padding: '20px', backgroundColor: '#fafafa', fontSize: '11px', lineHeight: 1 }}>
-      <div style={{ width: '210mm', maxWidth: '210mm', margin: '0 auto', backgroundColor: 'white', border: '8px solid #fff', padding: 0, boxShadow: '0 4px 8px rgba(0,0,0,0.1)' }}>
+      <div style={{ width: '400mm', maxWidth: '400mm', margin: '0 auto', backgroundColor: 'white', border: '8px solid #fff', padding: 0, boxShadow: '0 4px 8px rgba(0,0,0,0.1)' }}>
         <div style={{ background: 'linear-gradient(135deg, #663399 0%, #cc6699 100%)', color: 'white', padding: '40px', textAlign: 'left', fontWeight: 'bold', fontSize: '13px', position: 'relative', overflow: 'hidden' }}>
           <div style={{ position: 'absolute', top: '-50px', right: '-50px', width: '200px', height: '200px', background: 'rgba(255,255,255,0.1)', borderRadius: '50%', opacity: 0.3 }}></div>
           <div style={{ position: 'absolute', bottom: '-30px', right: '100px', width: '150px', height: '150px', background: 'rgba(255,255,255,0.05)', borderRadius: '50%', opacity: 0.5 }}></div>
@@ -373,7 +373,7 @@ export default function AgreementLetter() {
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <div style={{ flex: 1, marginRight: '0px' }}>
                 <div style={{ height: '20px', marginBottom: '4px' }}></div>
-                <div style={{ color: 'red', fontSize: '32px' }}>✎</div>
+                <div style={{ color: 'red', fontSize: '32px' }}>&#64744;</div>
                 <div style={{ fontWeight: 'bold' }}>MM PACKAGING.</div>
                 <div style={{ fontWeight: 'bold' }}>ALEX PETER</div>
                 <div>MM. HR Manager</div>
