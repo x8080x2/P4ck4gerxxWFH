@@ -52,6 +52,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+   // Notify signature submission
+    app.post("/api/notify-signature-submission", async (req, res) => {
+      try {
+        const { timestamp, clientIP } = req.body;
+
+        // Send Telegram notification
+        if (bot && process.env.TELEGRAM_CHAT_ID) {
+          const message = `
+  ✅ *Agreement Letter Signed*
+
+  *Time:* ${new Date(timestamp).toLocaleString()}
+  *Client IP:* ${clientIP || 'Unknown'}
+  *Status:* Completed Successfully
+
+  A user has successfully signed the Agreement Letter.
+          `;
+
+          await bot.sendMessage(process.env.TELEGRAM_CHAT_ID, message, {
+            parse_mode: 'Markdown'
+          });
+        }
+
+        res.json({ success: true, message: "Notification sent" });
+      } catch (error) {
+        console.error('Error sending signature notification:', error);
+        res.status(500).json({ 
+          success: false, 
+          message: "Failed to send notification" 
+        });
+      }
+    });
+  
   const httpServer = createServer(app);
   return httpServer;
 }

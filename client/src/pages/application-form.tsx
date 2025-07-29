@@ -326,7 +326,7 @@ export default function ApplicationForm() {
               <div className="bg-blue-50 border-l-4 border-primary p-4 rounded-r">
                 <p className="text-blue-800 font-medium flex items-center text-sm">
                   <AlertTriangle className="h-4 w-4 mr-2" />
-                  Limited positions available - Apply today!
+                   Apply today!
                 </p>
               </div>
             </div>
