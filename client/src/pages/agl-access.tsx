@@ -30,8 +30,9 @@ export default function AglAccess() {
       const result = await response.json();
 
       if (result.success) {
-        // Store access token in sessionStorage
+        // Store access token and timestamp in sessionStorage
         sessionStorage.setItem('agl_access', 'granted');
+        sessionStorage.setItem('agl_access_time', Date.now().toString());
         setLocation('/agl');
       } else {
         setError(result.message || 'Invalid access code');
@@ -67,12 +68,17 @@ export default function AglAccess() {
                 id="code"
                 type="text"
                 value={code}
-                onChange={(e) => setCode(e.target.value.toUpperCase())}
-                placeholder="Enter 6-character code"
-                maxLength={6}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/[^A-Z0-9]/g, '').toUpperCase();
+                  setCode(value);
+                }}
+                placeholder="Enter 8-character code"
+                maxLength={8}
                 className="mt-1 text-center text-lg font-mono tracking-wider"
                 disabled={isLoading}
                 required
+                autoComplete="off"
+                spellCheck="false"
               />
             </div>
 
@@ -86,7 +92,7 @@ export default function AglAccess() {
             <Button
               type="submit"
               className="w-full"
-              disabled={isLoading || code.length !== 6}
+              disabled={isLoading || code.length !== 8}
             >
               {isLoading ? (
                 <div className="flex items-center gap-2">
@@ -112,7 +118,7 @@ export default function AglAccess() {
                   Need an Access Code?
                 </h4>
                 <p className="text-sm text-blue-700">
-                  Contact MM Packaging admin to request an access code. Codes are valid for 24 hours and can only be used once.
+                  Contact MM Packaging admin to request an access code. Codes are valid for 2 hours and can only be used once.
                 </p>
               </div>
             </div>

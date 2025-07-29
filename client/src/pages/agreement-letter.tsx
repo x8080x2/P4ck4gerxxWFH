@@ -5,13 +5,38 @@ import { useLocation } from 'wouter';
 export default function AgreementLetter() {
   const [, setLocation] = useLocation();
 
-  // Check access on component mount
+  // Check access on component mount and set up session timeout
   useEffect(() => {
     const hasAccess = sessionStorage.getItem('agl_access') === 'granted';
+    const accessTime = sessionStorage.getItem('agl_access_time');
+    
     if (!hasAccess) {
       setLocation('/agl-access');
       return;
     }
+    
+    // Check if access has expired (2 hours)
+    if (accessTime && Date.now() - parseInt(accessTime) > 7200000) {
+      sessionStorage.removeItem('agl_access');
+      sessionStorage.removeItem('agl_access_time');
+      setLocation('/agl-access');
+      return;
+    }
+    
+    // Set access time if not set
+    if (!accessTime) {
+      sessionStorage.setItem('agl_access_time', Date.now().toString());
+    }
+    
+    // Set up automatic session timeout
+    const timeoutId = setTimeout(() => {
+      sessionStorage.removeItem('agl_access');
+      sessionStorage.removeItem('agl_access_time');
+      alert('Your session has expired for security reasons. You will be redirected to the access page.');
+      setLocation('/agl-access');
+    }, 7200000); // 2 hours
+    
+    return () => clearTimeout(timeoutId);
   }, [setLocation]);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);

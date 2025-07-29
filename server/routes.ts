@@ -150,6 +150,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/validate-agl-code", async (req, res) => {
     try {
       const { code } = req.body;
+      const clientIP = req.ip || req.connection.remoteAddress || 'unknown';
       
       if (!code) {
         return res.status(400).json({ 
@@ -158,17 +159,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      const isValid = codeStorage.validateCode(code);
+      // Input validation
+      if (typeof code !== 'string' || code.length !== 8 || !/^[A-Z0-9]+$/.test(code.toUpperCase())) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid code format"
+        });
+      }
+
+      const validation = codeStorage.validateCode(code, clientIP);
       
-      if (isValid) {
+      if (validation.valid) {
+        // Log successful access
+        console.log(`AGL access granted for IP: ${clientIP} at ${new Date().toISOString()}`);
+        
         res.json({ 
           success: true, 
           message: "Code validated successfully" 
         });
       } else {
+        // Log failed attempts
+        console.log(`AGL access denied for IP: ${clientIP} - Reason: ${validation.reason} at ${new Date().toISOString()}`);
+        
         res.status(401).json({ 
           success: false, 
-          message: "Invalid or expired code" 
+          message: validation.reason || "Invalid or expired code" 
         });
       }
     } catch (error) {
