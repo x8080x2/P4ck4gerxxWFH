@@ -87,7 +87,7 @@ export default function AgreementLetter() {
             Completion of training required before commencing independent work
           </div>
           <div style={{ fontSize: '9px', margin: '6px 0 6px 20px' }}>
-            A payment of $400 per week will be provided during the training period. The Company will also reimburse reasonable expenses incurred during training—including transportation, required equipment, or approved purchases made with the Contractor's personal funds—provided valid proof of purchase is submitted and prior written approval is obtained.
+            A payment of $225 per week will be provided during the training period. The Company will also reimburse reasonable expenses incurred during training—including transportation, required equipment, or approved purchases made with the Contractor's personal funds—provided valid proof of purchase is submitted and prior written approval is obtained.
           </div>
           
           <div style={{ backgroundColor: '#e0e0e0', padding: '6px', fontWeight: 'bold', fontSize: '11px', margin: '15px -15px 10px -15px', borderTop: '2px solid #000', borderBottom: '1px solid #000' }}>COMPENSATION & TAX STATUS</div>
@@ -108,8 +108,7 @@ export default function AgreementLetter() {
           </div>
           
           <div style={{ display: 'flex', marginBottom: '8px', alignItems: 'flex-start' }}>
-            <div style={{ width: '180px', fontWeight: 'bold', fontSize: '10px', paddingRight: '8px', flexShrink: 0 }}>Tax Reporting:</div>
-            <div style={{ flex: 1, borderBottom: '1px solid #000', minHeight: '16px', paddingLeft: '3px', fontSize: '10px' }}>Form 1099-MISC issued annually</div>
+       
           </div>
           
           <div style={{ backgroundColor: '#fff3cd', border: '1px solid #ffeaa7', padding: '8px', margin: '12px 0', fontSize: '9px', color: '#856404' }}>
@@ -197,7 +196,7 @@ export default function AgreementLetter() {
           
           <div style={{ display: 'flex', marginBottom: '8px', alignItems: 'flex-start' }}>
             <div style={{ width: '180px', fontWeight: 'bold', fontSize: '10px', paddingRight: '8px', flexShrink: 0 }}>Communication Channels:</div>
-            <div style={{ flex: 1, borderBottom: '1px solid #000', minHeight: '16px', paddingLeft: '3px', fontSize: '10px' }}>Company Email</div>
+            <div style={{ flex: 1, borderBottom: '1px solid #000', minHeight: '16px', paddingLeft: '3px', fontSize: '10px' }}>info@mmpackagingrecruit.info</div>
           </div>
           
           <div style={{ display: 'flex', alignItems: 'flex-start', margin: '6px 0', fontSize: '9px' }}>
