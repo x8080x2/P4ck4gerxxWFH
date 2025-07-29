@@ -55,8 +55,7 @@ export default function AglAccess() {
             Agreement Letter Access
           </CardTitle>
           <p className="text-neutral-600 text-sm">
-            Enter the access code provided by MM Packaging admin to view the agreement letter.
-          </p>
+            Enter the access code provided by MM Packaging Admin          </p>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -112,14 +111,6 @@ export default function AglAccess() {
             <div className="flex items-start gap-3">
               <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                 <span className="text-white text-xs font-bold">i</span>
-              </div>
-              <div>
-                <h4 className="text-sm font-medium text-blue-900 mb-1">
-                  Need an Access Code?
-                </h4>
-                <p className="text-sm text-blue-700">
-                  Contact MM Packaging admin to request an access code. Codes are valid for 2 hours and can only be used once.
-                </p>
               </div>
             </div>
           </div>
