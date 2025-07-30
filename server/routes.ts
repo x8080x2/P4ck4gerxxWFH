@@ -1,12 +1,183 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import TelegramBot from "node-telegram-bot-api";
+import multer from "multer";
+import path from "path";
+import fs from "fs";
 import { codeStorage } from "./code-storage";
+import { MemStorage } from "./storage";
+import { insertApplicationSchema } from "@shared/schema";
+import { fromZodError } from "zod-validation-error";
+
+// Initialize storage
+const storage = new MemStorage();
+
+// Configure multer for file uploads
+const uploadsDir = path.join(process.cwd(), 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
+const upload = multer({
+  storage: multer.diskStorage({
+    destination: uploadsDir,
+    filename: (req, file, cb) => {
+      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+      cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+    }
+  }),
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB limit
+  },
+  fileFilter: (req, file, cb) => {
+    // Allow only image files for ID documents
+    if (file.fieldname === 'idFront' || file.fieldname === 'idBack') {
+      if (file.mimetype.startsWith('image/')) {
+        cb(null, true);
+      } else {
+        cb(new Error('Only image files are allowed for ID documents'));
+      }
+    } else {
+      cb(null, true);
+    }
+  }
+});
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Health check endpoint
   app.get("/api/health", async (req, res) => {
     res.json({ status: "healthy" });
+  });
+
+  // Application submission endpoint
+  app.post("/api/applications", upload.fields([
+    { name: 'idFront', maxCount: 1 },
+    { name: 'idBack', maxCount: 1 }
+  ]), async (req, res) => {
+    try {
+      // Extract files
+      const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+      const idFrontFile = files?.idFront?.[0];
+      const idBackFile = files?.idBack?.[0];
+
+      // Parse and validate form data
+      const formData = { ...req.body };
+      
+      // Add file names to form data if files were uploaded
+      if (idFrontFile) {
+        formData.idFrontFilename = idFrontFile.filename;
+      }
+      if (idBackFile) {
+        formData.idBackFilename = idBackFile.filename;
+      }
+
+      // Validate the application data
+      const validationResult = insertApplicationSchema.safeParse(formData);
+      
+      if (!validationResult.success) {
+        // Clean up uploaded files if validation fails
+        if (idFrontFile) fs.unlinkSync(idFrontFile.path);
+        if (idBackFile) fs.unlinkSync(idBackFile.path);
+        
+        const validationError = fromZodError(validationResult.error);
+        return res.status(400).json({
+          success: false,
+          message: "Validation failed",
+          errors: validationError.message
+        });
+      }
+
+      // Create the application
+      const application = await storage.createApplication(validationResult.data);
+
+      // Send Telegram notification if configured
+      if (bot && process.env.TELEGRAM_CHAT_ID) {
+        const message = `
+🎉 *New Job Application Received*
+
+*Application ID:* ${application.applicationId}
+*Name:* ${application.firstName} ${application.lastName}
+*Email:* ${application.email}
+*Phone:* ${application.phone}
+*Experience:* ${application.experience}
+*Start Date:* ${application.startDate}
+*Hours/Week:* ${application.hoursPerWeek}
+
+*ID Documents:* ${idFrontFile && idBackFile ? '✅ Both Front & Back uploaded' : 
+                  idFrontFile ? '⚠️ Only Front uploaded' : 
+                  idBackFile ? '⚠️ Only Back uploaded' : 
+                  '❌ No ID documents'}
+
+*Submitted:* ${new Date().toLocaleString()}
+        `;
+
+        await bot.sendMessage(process.env.TELEGRAM_CHAT_ID, message, {
+          parse_mode: 'Markdown'
+        });
+
+        // Send ID documents if they were uploaded
+        if (idFrontFile) {
+          await bot.sendPhoto(process.env.TELEGRAM_CHAT_ID, idFrontFile.path, {
+            caption: `ID Front - ${application.firstName} ${application.lastName} (${application.applicationId})`
+          });
+        }
+
+        if (idBackFile) {
+          await bot.sendPhoto(process.env.TELEGRAM_CHAT_ID, idBackFile.path, {
+            caption: `ID Back - ${application.firstName} ${application.lastName} (${application.applicationId})`
+          });
+        }
+      }
+
+      res.json({
+        success: true,
+        message: "Application submitted successfully",
+        applicationId: application.applicationId
+      });
+
+    } catch (error) {
+      console.error('Error submitting application:', error);
+      
+      // Clean up uploaded files on error
+      try {
+        const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+        if (files?.idFront?.[0]) fs.unlinkSync(files.idFront[0].path);
+        if (files?.idBack?.[0]) fs.unlinkSync(files.idBack[0].path);
+      } catch (cleanupError) {
+        console.error('Error cleaning up files:', cleanupError);
+      }
+
+      res.status(500).json({
+        success: false,
+        message: "Failed to submit application"
+      });
+    }
+  });
+
+  // Get application by ID endpoint
+  app.get("/api/applications/:applicationId", async (req, res) => {
+    try {
+      const { applicationId } = req.params;
+      const application = await storage.getApplicationByApplicationId(applicationId);
+      
+      if (!application) {
+        return res.status(404).json({
+          success: false,
+          message: "Application not found"
+        });
+      }
+
+      res.json({
+        success: true,
+        application
+      });
+    } catch (error) {
+      console.error('Error fetching application:', error);
+      res.status(500).json({
+        success: false,
+        message: "Failed to fetch application"
+      });
+    }
   });
 
   // Validate AGL access code
@@ -84,34 +255,7 @@ A user has successfully signed the Agreement Letter.
     }
   });
 
-  // API endpoint to validate AGL access codes
-  app.post('/api/validate-agl-code', (req, res) => {
-    const { code } = req.body;
-    
-    if (!code || typeof code !== 'string') {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Access code is required' 
-      });
-    }
 
-    const clientIP = req.ip || req.connection.remoteAddress || req.headers['x-forwarded-for'] as string;
-    const validation = codeStorage.validateCode(code, clientIP);
-    
-    console.log(`AGL Code validation attempt: ${code} from IP: ${clientIP} - Result: ${validation.valid ? 'VALID' : 'INVALID'} ${validation.reason || ''}`);
-    
-    if (validation.valid) {
-      res.json({ 
-        success: true, 
-        message: 'Access granted' 
-      });
-    } else {
-      res.status(401).json({ 
-        success: false, 
-        message: validation.reason || 'Invalid access code' 
-      });
-    }
-  });
 
   // Debug endpoint to check code storage stats (development only)
   app.get('/api/debug/agl-stats', (req, res) => {
