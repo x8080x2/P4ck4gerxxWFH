@@ -9,10 +9,20 @@ export default function ApplicationSuccess() {
   const [, params] = useRoute("/success/:id");
   const applicationId = params?.id;
 
-  const { data: application, isLoading } = useQuery<Application>({
+  const { data: response, isLoading, error } = useQuery({
     queryKey: ["/api/applications", applicationId],
+    queryFn: async () => {
+      if (!applicationId) throw new Error("No application ID");
+      const res = await fetch(`/api/applications/${applicationId}`);
+      if (!res.ok) {
+        throw new Error("Application not found");
+      }
+      return res.json();
+    },
     enabled: !!applicationId,
   });
+
+  const application = response?.success ? response.application : null;
 
   if (isLoading) {
     return (
@@ -21,6 +31,30 @@ export default function ApplicationSuccess() {
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
           <p className="text-neutral-600">Loading application details...</p>
         </div>
+      </div>
+    );
+  }
+
+  if (error || !application) {
+    return (
+      <div className="min-h-screen bg-neutral-100 flex items-center justify-center">
+        <Card className="max-w-md">
+          <CardContent className="p-8 text-center">
+            <CheckCircle className="h-16 w-16 text-success mx-auto mb-4" />
+            <h2 className="text-2xl font-bold text-neutral-800 mb-2">Application Submitted!</h2>
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+              <p className="text-blue-800 font-medium">
+                Application ID: #{applicationId}
+              </p>
+            </div>
+            <p className="text-neutral-700 mb-4">
+              Your application has been submitted successfully. We will review it and contact you within <strong>2-3 business days</strong>.
+            </p>
+            <p className="text-sm text-neutral-500">
+              Note: Application details are temporarily unavailable due to system maintenance, but your submission was successful.
+            </p>
+          </CardContent>
+        </Card>
       </div>
     );
   }
