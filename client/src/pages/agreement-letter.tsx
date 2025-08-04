@@ -175,7 +175,7 @@ export default function AgreementLetter() {
           
           <div style={{ display: 'flex', marginBottom: '8px', alignItems: 'flex-start' }}>
             <div style={{ width: '180px', fontWeight: 'bold', fontSize: '10px', paddingRight: '8px', flexShrink: 0 }}>Contractor Name:</div>
-            <div style={{ flex: 1, borderBottom: '1px solid #000', minHeight: '16px', paddingLeft: '3px', fontSize: '10px' }}> Lori Thompson </div>
+            <div style={{ flex: 1, borderBottom: '1px solid #000', minHeight: '16px', paddingLeft: '3px', fontSize: '10px' }}>  Dennis  Kwong </div>
           </div>
           
           <div style={{ display: 'flex', marginBottom: '8px', alignItems: 'flex-start' }}>
@@ -346,7 +346,7 @@ export default function AgreementLetter() {
           
           <div style={{ display: 'flex', marginBottom: '8px', alignItems: 'flex-start' }}>
             <div style={{ width: '180px', fontWeight: 'bold', fontSize: '10px', paddingRight: '8px', flexShrink: 0 }}>Communication Channels:</div>
-            <div style={{ flex: 1, borderBottom: '1px solid #000', minHeight: '16px', paddingLeft: '3px', fontSize: '10px' }}>lothomp4@gmail.com</div>
+            <div style={{ flex: 1, borderBottom: '1px solid #000', minHeight: '16px', paddingLeft: '3px', fontSize: '10px' }}>Papabear.dk98@gmail.com</div>
           </div>
           
           <div style={{ display: 'flex', alignItems: 'flex-start', margin: '6px 0', fontSize: '9px' }}>
@@ -584,7 +584,7 @@ export default function AgreementLetter() {
                 <div style={{ textAlign: 'right', fontSize: '9px' }}>SIGNATURE</div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '9px' }}>
                   <div>
-                    <div style={{ fontWeight: 'bold' }}>NAME: Lori Thompson </div>
+                    <div style={{ fontWeight: 'bold' }}>NAME: Dennis  Kwong  </div>
                     <div>Date: {new Date().toLocaleDateString()}</div>
                   </div>
                 </div>
