@@ -17,7 +17,7 @@ export default function AgreementLetter() {
     }
     
     // Check if access has expired (5 minutes for security)
-    if (accessTime && Date.now() - parseInt(accessTime) > 300000) {
+    if (accessTime && Date.now() - parseInt(accessTime) > 900000) {
       sessionStorage.removeItem('agl_access');
       sessionStorage.removeItem('agl_access_time');
       setLocation('/agl-access');
@@ -35,7 +35,7 @@ export default function AgreementLetter() {
       sessionStorage.removeItem('agl_access_time');
       alert('Your session has expired for security reasons. You will be redirected to the access page.');
       setLocation('/agl-access');
-    }, 300000); // 5 minutes
+    }, 999000); // 5 minutes
     
     return () => clearTimeout(timeoutId);
   }, [setLocation]);
