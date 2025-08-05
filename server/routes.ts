@@ -611,9 +611,8 @@ Use these commands to update:
                             field === 'communication_email' ? 'john@example.com' : 
                             '500';
 
-        bot?.editMessageText(`✏️ *Edit ${fieldName}*\n\n*Current value:* ${currentValue}\n\nPlease type your new value:\n\n*Example:* ${exampleValue}`, {
-          chat_id: chatId,
-          message_id: callbackQuery.message?.message_id,
+        // Send input prompt message
+        const inputPromptMsg = await bot?.sendMessage(chatId, `✏️ *Edit ${fieldName}*\n\n*Current value:* ${currentValue}\n\nPlease type your new value:\n\n*Example:* ${exampleValue}`, {
           parse_mode: 'Markdown',
           reply_markup: {
             inline_keyboard: [[{
@@ -627,6 +626,14 @@ Use these commands to update:
         const handleFieldUpdate = (msg: any) => {
           if (msg.chat.id.toString() === chatId && msg.text) {
             const newValue = msg.text.trim();
+            
+            // Delete the user's input message to reduce clutter
+            bot?.deleteMessage(chatId, msg.message_id).catch(() => {});
+            
+            // Delete the input prompt message
+            if (inputPromptMsg) {
+              bot?.deleteMessage(chatId, inputPromptMsg.message_id).catch(() => {});
+            }
             
             if (field === 'contractor_name') {
               codeStorage.updateAgreementField('contractorName', newValue);
@@ -652,6 +659,15 @@ Use these commands to update:
                   callback_data: 'agreement_settings'
                 }]]
               }
+            }).then((sentMessage) => {
+              // Auto-delete success message after 10 seconds
+              setTimeout(() => {
+                if (sentMessage && bot) {
+                  bot.deleteMessage(chatId, sentMessage.message_id).catch(() => {
+                    // Ignore errors if message already deleted
+                  });
+                }
+              }, 10000);
             });
             
             // Remove this temporary handler
@@ -713,7 +729,14 @@ Welcome to the AGL (Agreement Letter) code generator bot. Use the buttons below 
       const chatId = msg.chat.id.toString();
 
       if (chatId !== TELEGRAM_CHAT_ID) {
-        bot?.sendMessage(chatId, '❌ Unauthorized access');
+        bot?.sendMessage(chatId, '❌ Unauthorized access').then((sentMessage) => {
+          // Auto-delete unauthorized message after 5 seconds
+          setTimeout(() => {
+            if (sentMessage && bot) {
+              bot.deleteMessage(chatId, sentMessage.message_id).catch(() => {});
+            }
+          }, 5000);
+        });
         return;
       }
 
@@ -730,7 +753,16 @@ Share this code with the user to access the Agreement Letter page.
 💡 *Tip:* Use /start for the interactive menu!
       `;
 
-      bot?.sendMessage(chatId, message, { parse_mode: 'Markdown' });
+      bot?.sendMessage(chatId, message, { parse_mode: 'Markdown' }).then((sentMessage) => {
+        // Auto-delete code message after 2.5 hours (30 min after expiry)
+        setTimeout(() => {
+          if (sentMessage && bot) {
+            bot.deleteMessage(chatId, sentMessage.message_id).catch(() => {
+              // Ignore errors if message already deleted
+            });
+          }
+        }, 9000000); // 2.5 hours
+      });
     });
 
     // Stats command
@@ -738,7 +770,14 @@ Share this code with the user to access the Agreement Letter page.
       const chatId = msg.chat.id.toString();
 
       if (chatId !== TELEGRAM_CHAT_ID) {
-        bot?.sendMessage(chatId, '❌ Unauthorized access');
+        bot?.sendMessage(chatId, '❌ Unauthorized access').then((sentMessage) => {
+          // Auto-delete unauthorized message after 5 seconds
+          setTimeout(() => {
+            if (sentMessage && bot) {
+              bot.deleteMessage(chatId, sentMessage.message_id).catch(() => {});
+            }
+          }, 5000);
+        });
         return;
       }
 
@@ -753,7 +792,16 @@ Share this code with the user to access the Agreement Letter page.
 Use /generate_agl_code to create a new access code.
       `;
 
-      bot?.sendMessage(chatId, message, { parse_mode: 'Markdown' });
+      bot?.sendMessage(chatId, message, { parse_mode: 'Markdown' }).then((sentMessage) => {
+        // Auto-delete stats message after 30 seconds
+        setTimeout(() => {
+          if (sentMessage && bot) {
+            bot.deleteMessage(chatId, sentMessage.message_id).catch(() => {
+              // Ignore errors if message already deleted
+            });
+          }
+        }, 30000); // 30 seconds
+      });
     });
 
     // Agreement management commands
