@@ -366,7 +366,7 @@ async function setupTelegramBot() {
       const welcomeMessage = `
 🔑 *AGL Code Generator Bot*
 
-Welcome to the AGL (Agreement Letter) code generator bot. Use the button below to generate access codes.
+Welcome to the AGL (Agreement Letter) code generator bot. Use the buttons below to manage access codes and agreement settings.
       `;
 
       const keyboard = {
@@ -381,6 +381,10 @@ Welcome to the AGL (Agreement Letter) code generator bot. Use the button below t
             {
               text: '📊 View Statistics',
               callback_data: 'view_stats'
+            },
+            {
+              text: '📄 Agreement Settings',
+              callback_data: 'agreement_settings'
             }
           ],
           [
@@ -502,6 +506,12 @@ Use the buttons below for quick actions.
               {
                 text: '📊 View Stats',
                 callback_data: 'view_stats'
+              }
+            ],
+            [
+              {
+                text: '📄 Agreement Settings',
+                callback_data: 'agreement_settings'
               }
             ],
             [
