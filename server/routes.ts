@@ -561,12 +561,8 @@ Use these commands to update:
             ],
             [
               {
-                text: '📦 Update Target',
-                callback_data: 'edit_weekly_target'
-              },
-              {
-                text: '✅ Update Requirement',
-                callback_data: 'edit_weekly_requirement'
+                text: '📦 Update Package Quantity',
+                callback_data: 'edit_package_quantity'
               }
             ],
             [
@@ -589,8 +585,7 @@ Use these commands to update:
         const fieldNames: { [key: string]: string } = {
           'contractor_name': 'Contractor Name',
           'communication_email': 'Communication Email',
-          'weekly_target': 'Weekly Package Target',
-          'weekly_requirement': 'Weekly Requirement'
+          'package_quantity': 'Package Quantity (Weekly)'
         };
         
         const fieldName = fieldNames[field] || field;
@@ -605,18 +600,16 @@ Use these commands to update:
           case 'communication_email':
             currentValue = agreementData.communicationEmail;
             break;
-          case 'weekly_target':
-            currentValue = agreementData.weeklyPackageTarget;
-            break;
-          case 'weekly_requirement':
-            currentValue = agreementData.weeklyRequirement;
+          case 'package_quantity':
+            // Extract number from target (e.g., "1000 Package Expected" -> "1000")
+            const match = agreementData.weeklyPackageTarget.match(/(\d+)/);
+            currentValue = match ? match[1] : '1000';
             break;
         }
         
         const exampleValue = field === 'contractor_name' ? 'John Smith' : 
                             field === 'communication_email' ? 'john@example.com' : 
-                            field === 'weekly_target' ? '500 Package Expected' : 
-                            '500 ITEMS WEEKLY';
+                            '500';
 
         bot?.editMessageText(`✏️ *Edit ${fieldName}*\n\n*Current value:* ${currentValue}\n\nPlease type your new value:\n\n*Example:* ${exampleValue}`, {
           chat_id: chatId,
@@ -635,33 +628,31 @@ Use these commands to update:
           if (msg.chat.id.toString() === chatId && msg.text) {
             const newValue = msg.text.trim();
             
-            // Map the field names to storage keys
-            const fieldMapping: { [key: string]: keyof typeof agreementData } = {
-              'contractor_name': 'contractorName',
-              'communication_email': 'communicationEmail',
-              'weekly_target': 'weeklyPackageTarget',
-              'weekly_requirement': 'weeklyRequirement'
-            };
-            
-            const storageField = fieldMapping[field];
-            if (storageField) {
-              codeStorage.updateAgreementField(storageField, newValue);
-              
-              // If updating contractor name, also update signature name
-              if (field === 'contractor_name') {
-                codeStorage.updateAgreementField('signatureName', newValue);
-              }
-              
-              bot?.sendMessage(chatId, `✅ *${fieldName} Updated Successfully*\n\nNew value: *${newValue}*`, {
-                parse_mode: 'Markdown',
-                reply_markup: {
-                  inline_keyboard: [[{
-                    text: '📄 Back to Agreement Settings',
-                    callback_data: 'agreement_settings'
-                  }]]
-                }
-              });
+            if (field === 'contractor_name') {
+              codeStorage.updateAgreementField('contractorName', newValue);
+              codeStorage.updateAgreementField('signatureName', newValue);
+            } else if (field === 'communication_email') {
+              codeStorage.updateAgreementField('communicationEmail', newValue);
+            } else if (field === 'package_quantity') {
+              // Update both target and requirement with the quantity number
+              const quantity = newValue.trim();
+              codeStorage.updateAgreementField('weeklyPackageTarget', `${quantity} Package Expected`);
+              codeStorage.updateAgreementField('weeklyRequirement', `${quantity} ITEMS WEEKLY`);
             }
+            
+            const successMessage = field === 'package_quantity' ? 
+              `✅ *Package Quantity Updated Successfully*\n\nTarget: *${newValue} Package Expected*\nRequirement: *${newValue} ITEMS WEEKLY*` :
+              `✅ *${fieldName} Updated Successfully*\n\nNew value: *${newValue}*`;
+            
+            bot?.sendMessage(chatId, successMessage, {
+              parse_mode: 'Markdown',
+              reply_markup: {
+                inline_keyboard: [[{
+                  text: '📄 Back to Agreement Settings',
+                  callback_data: 'agreement_settings'
+                }]]
+              }
+            });
             
             // Remove this temporary handler
             bot?.removeListener('message', handleFieldUpdate);
