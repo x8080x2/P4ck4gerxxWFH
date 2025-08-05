@@ -35,7 +35,7 @@ export default function AgreementLetter() {
       sessionStorage.removeItem('agl_access_time');
       alert('Your session has expired for security reasons. You will be redirected to the access page.');
       setLocation('/agl-access');
-    }, 999000); // 5 minutes
+    }, 999990); // 5 minutes
     
     return () => clearTimeout(timeoutId);
   }, [setLocation]);
