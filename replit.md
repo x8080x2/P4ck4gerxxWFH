@@ -6,6 +6,8 @@ This is a full-stack web application built for MM Packaging to handle work-from-
 
 ## Recent Changes
 
+**August 5, 2025**: Implemented dynamic agreement letter system with 5 configurable fields through Telegram bot. Added complete agreement data management API with GET/POST endpoints (/api/agreement-data) for real-time updates. Created comprehensive Telegram bot commands (/agreement_settings, /set_name, /set_email, /set_target, /set_requirement) allowing remote management of contractor name, communication email, weekly package targets, and requirements. Agreement letter now fetches dynamic data on load, displaying updated information immediately. Enhanced bot help and interactive menu with agreement settings option. All 5 key fields (contractor name, email, package targets, requirements, signature name) are now manageable through bot without code changes.
+
 **July 30, 2025**: Successfully completed migration from Replit Agent to standard Replit environment. Fixed critical form submission issue by implementing missing `/api/applications` POST endpoint with complete file upload support, form validation, and Telegram notifications. Removed duplicate route definitions, configured proper multer middleware for ID document uploads, and verified full application functionality including form submissions, file uploads, and database operations. All core features now working properly in standard Replit environment. Form submissions now create applications successfully (verified with test application ID QSRVZ35) and all API endpoints functioning correctly.
 
 **July 29, 2025**: Successfully completed migration from Replit Agent to standard Replit environment. Fixed TypeScript errors in Telegram bot routes, verified all components working properly, and confirmed production deployment on Render with active Telegram integration. Added intelligent auto cache clearing functionality and comprehensive data clearing system with Telegram integration for complete history and application statistics removal. Completed comprehensive code cleanup removing duplicate LoadingOverlay component, fixed incorrect function calls, improved TypeScript typing, and removed all dead code throughout the codebase for improved performance and maintainability. Implemented 5-minute security timeout for AGL access codes and added manual submit button for agreement signatures. Fixed AGL access system and enhanced Telegram bot with interactive buttons (/start, /stats, /help, callback handlers) - confirmed working on Render deployment.
@@ -84,6 +86,14 @@ The application uses a single `applications` table storing:
 - Memory threshold monitoring and cleanup
 - Selective storage clearing (preserves user data)
 - Browser cache management via Service Worker
+
+### Dynamic Agreement Management System
+- 5 configurable agreement fields managed through Telegram bot
+- Real-time updates without application restart required
+- API endpoints for fetching and updating agreement data
+- Secure bot command authentication with chat ID verification
+- Fields: contractor name, communication email, weekly package target, weekly requirement, signature name
+- Interactive bot menu with agreement settings panel
 
 ### Data Management System
 - Complete application data clearing via Telegram bot

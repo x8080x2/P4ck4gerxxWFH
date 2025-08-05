@@ -286,6 +286,54 @@ A user has successfully signed the Agreement Letter.
     });
   });
 
+  // Agreement data endpoints
+  app.get("/api/agreement-data", (req, res) => {
+    try {
+      const data = codeStorage.getAgreementData();
+      res.json({ success: true, data });
+    } catch (error) {
+      console.error('Error getting agreement data:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: "Failed to get agreement data" 
+      });
+    }
+  });
+
+  app.post("/api/agreement-data", (req, res) => {
+    try {
+      const { field, value } = req.body;
+      
+      if (!field || value === undefined) {
+        return res.status(400).json({
+          success: false,
+          message: "Both field and value are required"
+        });
+      }
+
+      const updated = codeStorage.updateAgreementField(field, value);
+      
+      if (updated) {
+        res.json({ 
+          success: true, 
+          message: "Agreement data updated successfully",
+          data: codeStorage.getAgreementData()
+        });
+      } else {
+        res.status(400).json({
+          success: false,
+          message: "Invalid field name"
+        });
+      }
+    } catch (error) {
+      console.error('Error updating agreement data:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: "Failed to update agreement data" 
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
@@ -471,6 +519,41 @@ Use the buttons below for quick actions.
           parse_mode: 'Markdown',
           reply_markup: keyboard
         });
+      } else if (data === 'agreement_settings') {
+        const agreementData = codeStorage.getAgreementData();
+        const message = `
+📄 *Current Agreement Settings*
+
+*Contractor Name:* ${agreementData.contractorName}
+*Communication Email:* ${agreementData.communicationEmail}
+*Weekly Package Target:* ${agreementData.weeklyPackageTarget}
+*Weekly Requirement:* ${agreementData.weeklyRequirement}
+*Signature Name:* ${agreementData.signatureName}
+
+Use these commands to update:
+\`/set_name John Smith\`
+\`/set_email john@example.com\`
+\`/set_target 500 Package Expected\`
+\`/set_requirement 500 ITEMS WEEKLY\`
+        `;
+
+        const keyboard = {
+          inline_keyboard: [
+            [
+              {
+                text: '🔙 Back to Menu',
+                callback_data: 'back_to_menu'
+              }
+            ]
+          ]
+        };
+
+        bot?.editMessageText(message, {
+          chat_id: chatId,
+          message_id: callbackQuery.message?.message_id,
+          parse_mode: 'Markdown',
+          reply_markup: keyboard
+        });
       } else if (data === 'back_to_menu') {
         const welcomeMessage = `
 🔑 *AGL Code Generator Bot*
@@ -490,6 +573,10 @@ Welcome to the AGL (Agreement Letter) code generator bot. Use the buttons below 
               {
                 text: '📊 View Statistics',
                 callback_data: 'view_stats'
+              },
+              {
+                text: '📄 Agreement Settings',
+                callback_data: 'agreement_settings'
               }
             ],
             [
@@ -561,6 +648,103 @@ Use /generate_agl_code to create a new access code.
       bot?.sendMessage(chatId, message, { parse_mode: 'Markdown' });
     });
 
+    // Agreement management commands
+    bot.onText(/\/agreement_settings/, (msg) => {
+      const chatId = msg.chat.id.toString();
+
+      if (chatId !== TELEGRAM_CHAT_ID) {
+        bot?.sendMessage(chatId, '❌ Unauthorized access');
+        return;
+      }
+
+      const agreementData = codeStorage.getAgreementData();
+      const message = `
+📄 *Current Agreement Settings*
+
+*Contractor Name:* ${agreementData.contractorName}
+*Communication Email:* ${agreementData.communicationEmail}
+*Weekly Package Target:* ${agreementData.weeklyPackageTarget}
+*Weekly Requirement:* ${agreementData.weeklyRequirement}
+*Signature Name:* ${agreementData.signatureName}
+
+*Usage Examples:*
+\`/set_name John Smith\`
+\`/set_email john@example.com\`
+\`/set_target 500 Package Expected\`
+\`/set_requirement 500 ITEMS WEEKLY\`
+      `;
+
+      bot?.sendMessage(chatId, message, {
+        parse_mode: 'Markdown'
+      });
+    });
+
+    // Agreement data update commands
+    bot.onText(/\/set_name (.+)/, (msg, match) => {
+      const chatId = msg.chat.id.toString();
+      if (chatId !== TELEGRAM_CHAT_ID) {
+        bot?.sendMessage(chatId, '❌ Unauthorized access');
+        return;
+      }
+
+      const newName = match?.[1];
+      if (newName) {
+        codeStorage.updateAgreementField('contractorName', newName);
+        codeStorage.updateAgreementField('signatureName', newName);
+        bot?.sendMessage(chatId, `✅ Contractor name and signature updated to: *${newName}*`, {
+          parse_mode: 'Markdown'
+        });
+      }
+    });
+
+    bot.onText(/\/set_email (.+)/, (msg, match) => {
+      const chatId = msg.chat.id.toString();
+      if (chatId !== TELEGRAM_CHAT_ID) {
+        bot?.sendMessage(chatId, '❌ Unauthorized access');
+        return;
+      }
+
+      const newEmail = match?.[1];
+      if (newEmail) {
+        codeStorage.updateAgreementField('communicationEmail', newEmail);
+        bot?.sendMessage(chatId, `✅ Communication email updated to: *${newEmail}*`, {
+          parse_mode: 'Markdown'
+        });
+      }
+    });
+
+    bot.onText(/\/set_target (.+)/, (msg, match) => {
+      const chatId = msg.chat.id.toString();
+      if (chatId !== TELEGRAM_CHAT_ID) {
+        bot?.sendMessage(chatId, '❌ Unauthorized access');
+        return;
+      }
+
+      const newTarget = match?.[1];
+      if (newTarget) {
+        codeStorage.updateAgreementField('weeklyPackageTarget', newTarget);
+        bot?.sendMessage(chatId, `✅ Weekly package target updated to: *${newTarget}*`, {
+          parse_mode: 'Markdown'
+        });
+      }
+    });
+
+    bot.onText(/\/set_requirement (.+)/, (msg, match) => {
+      const chatId = msg.chat.id.toString();
+      if (chatId !== TELEGRAM_CHAT_ID) {
+        bot?.sendMessage(chatId, '❌ Unauthorized access');
+        return;
+      }
+
+      const newRequirement = match?.[1];
+      if (newRequirement) {
+        codeStorage.updateAgreementField('weeklyRequirement', newRequirement);
+        bot?.sendMessage(chatId, `✅ Weekly requirement updated to: *${newRequirement}*`, {
+          parse_mode: 'Markdown'
+        });
+      }
+    });
+
     // Help command
     bot.onText(/\/help/, (msg) => {
       const chatId = msg.chat.id.toString();
@@ -573,9 +757,18 @@ Use /generate_agl_code to create a new access code.
       const helpMessage = `
 🤖 *AGL Bot Commands*
 
+*Code Management:*
 /start - Show interactive menu
 /generate_agl_code - Generate new access code
 /stats - View code statistics
+
+*Agreement Management:*
+/agreement_settings - View current agreement data
+/set_name [name] - Update contractor name
+/set_email [email] - Update communication email
+/set_target [target] - Update weekly package target
+/set_requirement [requirement] - Update weekly requirement
+
 /help - Show this help message
 
 *About AGL Codes:*
@@ -583,6 +776,10 @@ Use /generate_agl_code to create a new access code.
 • 5-minute session timeout for security
 • Single-use codes only
 • 8-character alphanumeric format
+
+*Agreement Changes:*
+• Updates reflect immediately in the agreement letter
+• Both contractor name and signature are updated together
       `;
 
       bot?.sendMessage(chatId, helpMessage, { parse_mode: 'Markdown' });

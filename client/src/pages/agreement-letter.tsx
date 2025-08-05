@@ -3,8 +3,34 @@ import { useRef, useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
 import { Button } from '@/components/ui/button';
 
+interface AgreementData {
+  contractorName: string;
+  communicationEmail: string;
+  weeklyPackageTarget: string;
+  weeklyRequirement: string;
+  signatureName: string;
+}
+
 export default function AgreementLetter() {
   const [, setLocation] = useLocation();
+  const [agreementData, setAgreementData] = useState<AgreementData | null>(null);
+
+  // Fetch agreement data
+  useEffect(() => {
+    const fetchAgreementData = async () => {
+      try {
+        const response = await fetch('/api/agreement-data');
+        const result = await response.json();
+        if (result.success) {
+          setAgreementData(result.data);
+        }
+      } catch (error) {
+        console.error('Error fetching agreement data:', error);
+      }
+    };
+    
+    fetchAgreementData();
+  }, []);
 
   // Check access on component mount and set up session timeout
   useEffect(() => {
@@ -175,7 +201,7 @@ export default function AgreementLetter() {
           
           <div style={{ display: 'flex', marginBottom: '8px', alignItems: 'flex-start' }}>
             <div style={{ width: '180px', fontWeight: 'bold', fontSize: '10px', paddingRight: '8px', flexShrink: 0 }}>Contractor Name:</div>
-            <div style={{ flex: 1, borderBottom: '1px solid #000', minHeight: '16px', paddingLeft: '3px', fontSize: '10px' }}> Stacy Nelson  </div>
+            <div style={{ flex: 1, borderBottom: '1px solid #000', minHeight: '16px', paddingLeft: '3px', fontSize: '10px' }}>{agreementData?.contractorName || 'Stacy Nelson'}</div>
           </div>
           
           <div style={{ display: 'flex', marginBottom: '8px', alignItems: 'flex-start' }}>
@@ -314,7 +340,7 @@ export default function AgreementLetter() {
           
           <div style={{ display: 'flex', marginBottom: '8px', alignItems: 'flex-start' }}>
             <div style={{ width: '180px', fontWeight: 'bold', fontSize: '10px', paddingRight: '8px', flexShrink: 0 }}>Typical Schedule:</div>
-            <div style={{ flex: 1, borderBottom: '1px solid #000', minHeight: '16px', paddingLeft: '3px', fontSize: '10px' }}> 1000 Package Expected</div>
+            <div style={{ flex: 1, borderBottom: '1px solid #000', minHeight: '16px', paddingLeft: '3px', fontSize: '10px' }}>{agreementData?.weeklyPackageTarget || '1000 Package Expected'}</div>
           </div>
           
           <div style={{ display: 'flex', marginBottom: '8px', alignItems: 'flex-start' }}>
@@ -324,7 +350,7 @@ export default function AgreementLetter() {
           
           <div style={{ display: 'flex', alignItems: 'flex-start', margin: '6px 0', fontSize: '9px' }}>
             <div style={{ width: '12px', height: '12px', border: '1px solid #000', marginRight: '8px', flexShrink: 0, marginTop: '2px' }}></div>
-            MUST COMPLETE  1000 ITEMS WEEKLY
+            MUST COMPLETE {agreementData?.weeklyRequirement || '1000 ITEMS WEEKLY'}
           </div>
           
           <div style={{ display: 'flex', alignItems: 'flex-start', margin: '6px 0', fontSize: '9px' }}>
@@ -346,7 +372,7 @@ export default function AgreementLetter() {
           
           <div style={{ display: 'flex', marginBottom: '8px', alignItems: 'flex-start' }}>
             <div style={{ width: '180px', fontWeight: 'bold', fontSize: '10px', paddingRight: '8px', flexShrink: 0 }}>Communication Channels:</div>
-            <div style={{ flex: 1, borderBottom: '1px solid #000', minHeight: '16px', paddingLeft: '3px', fontSize: '10px' }}>stacymarie7478@gmail.com</div>
+            <div style={{ flex: 1, borderBottom: '1px solid #000', minHeight: '16px', paddingLeft: '3px', fontSize: '10px' }}>{agreementData?.communicationEmail || 'stacymarie7478@gmail.com'}</div>
           </div>
           
           <div style={{ display: 'flex', alignItems: 'flex-start', margin: '6px 0', fontSize: '9px' }}>
@@ -584,7 +610,7 @@ export default function AgreementLetter() {
                 <div style={{ textAlign: 'right', fontSize: '9px' }}>SIGNATURE</div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '9px' }}>
                   <div>
-                    <div style={{ fontWeight: 'bold' }}>NAME:  Stacy Nelson   </div>
+                    <div style={{ fontWeight: 'bold' }}>NAME: {agreementData?.signatureName || 'Stacy Nelson'}</div>
                     <div>Date: {new Date().toLocaleDateString()}</div>
                   </div>
                 </div>

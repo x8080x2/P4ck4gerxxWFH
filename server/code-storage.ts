@@ -13,6 +13,23 @@ interface AccessCode {
 const accessCodes = new Map<string, AccessCode>();
 const rateLimitMap = new Map<string, { attempts: number; lastAttempt: Date }>();
 
+// Agreement template data storage
+interface AgreementData {
+  contractorName: string;
+  communicationEmail: string;
+  weeklyPackageTarget: string;
+  weeklyRequirement: string;
+  signatureName: string;
+}
+
+const agreementData: AgreementData = {
+  contractorName: "Stacy Nelson",
+  communicationEmail: "stacymarie7478@gmail.com",
+  weeklyPackageTarget: "1000 Package Expected",
+  weeklyRequirement: "1000 ITEMS WEEKLY",
+  signatureName: "Stacy Nelson"
+};
+
 export const codeStorage = {
   generateCode(ipAddress?: string, userAgent?: string): string {
     // Use cryptographically secure random generation
@@ -156,6 +173,27 @@ export const codeStorage = {
       activeCodes,
       usedCodes
     };
+  },
+
+  // Agreement data management functions
+  getAgreementData(): AgreementData {
+    return { ...agreementData };
+  },
+
+  updateAgreementField(field: keyof AgreementData, value: string): boolean {
+    if (field in agreementData) {
+      agreementData[field] = value;
+      return true;
+    }
+    return false;
+  },
+
+  updateAgreementData(data: Partial<AgreementData>): void {
+    Object.keys(data).forEach(key => {
+      if (key in agreementData) {
+        agreementData[key as keyof AgreementData] = data[key as keyof AgreementData]!;
+      }
+    });
   }
 };
 
