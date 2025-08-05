@@ -175,7 +175,7 @@ export default function AgreementLetter() {
           
           <div style={{ display: 'flex', marginBottom: '8px', alignItems: 'flex-start' }}>
             <div style={{ width: '180px', fontWeight: 'bold', fontSize: '10px', paddingRight: '8px', flexShrink: 0 }}>Contractor Name:</div>
-            <div style={{ flex: 1, borderBottom: '1px solid #000', minHeight: '16px', paddingLeft: '3px', fontSize: '10px' }}> Stacy Nelson  </div>
+            <div style={{ flex: 1, borderBottom: '1px solid #000', minHeight: '16px', paddingLeft: '3px', fontSize: '10px' }}>[TO BE FILLED BY CONTRACTOR]</div>
           </div>
           
           <div style={{ display: 'flex', marginBottom: '8px', alignItems: 'flex-start' }}>
@@ -313,8 +313,8 @@ export default function AgreementLetter() {
           <div style={{ backgroundColor: '#e0e0e0', padding: '6px', fontWeight: 'bold', fontSize: '11px', margin: '15px -15px 10px -15px', borderTop: '2px solid #000', borderBottom: '1px solid #000' }}>WORK SCHEDULE & PERFORMANCE</div>
           
           <div style={{ display: 'flex', marginBottom: '8px', alignItems: 'flex-start' }}>
-            <div style={{ width: '180px', fontWeight: 'bold', fontSize: '10px', paddingRight: '8px', flexShrink: 0 }}>Typical Schedule:</div>
-            <div style={{ flex: 1, borderBottom: '1px solid #000', minHeight: '16px', paddingLeft: '3px', fontSize: '10px' }}> 1000 Package Expected</div>
+            <div style={{ width: '180px', fontWeight: 'bold', fontSize: '10px', paddingRight: '8px', flexShrink: 0 }}>Expected Weekly Volume:</div>
+            <div style={{ flex: 1, borderBottom: '1px solid #000', minHeight: '16px', paddingLeft: '3px', fontSize: '10px' }}>[TO BE DETERMINED BY COMPANY]</div>
           </div>
           
           <div style={{ display: 'flex', marginBottom: '8px', alignItems: 'flex-start' }}>
@@ -324,7 +324,7 @@ export default function AgreementLetter() {
           
           <div style={{ display: 'flex', alignItems: 'flex-start', margin: '6px 0', fontSize: '9px' }}>
             <div style={{ width: '12px', height: '12px', border: '1px solid #000', marginRight: '8px', flexShrink: 0, marginTop: '2px' }}></div>
-            MUST COMPLETE  1000 ITEMS WEEKLY
+            Meet agreed-upon weekly package completion targets as specified by Company
           </div>
           
           <div style={{ display: 'flex', alignItems: 'flex-start', margin: '6px 0', fontSize: '9px' }}>
@@ -346,7 +346,7 @@ export default function AgreementLetter() {
           
           <div style={{ display: 'flex', marginBottom: '8px', alignItems: 'flex-start' }}>
             <div style={{ width: '180px', fontWeight: 'bold', fontSize: '10px', paddingRight: '8px', flexShrink: 0 }}>Communication Channels:</div>
-            <div style={{ flex: 1, borderBottom: '1px solid #000', minHeight: '16px', paddingLeft: '3px', fontSize: '10px' }}>stacymarie7478@gmail.com</div>
+            <div style={{ flex: 1, borderBottom: '1px solid #000', minHeight: '16px', paddingLeft: '3px', fontSize: '10px' }}>Email, Phone, Company Portal (as provided by Company)</div>
           </div>
           
           <div style={{ display: 'flex', alignItems: 'flex-start', margin: '6px 0', fontSize: '9px' }}>
@@ -584,7 +584,7 @@ export default function AgreementLetter() {
                 <div style={{ textAlign: 'right', fontSize: '9px' }}>SIGNATURE</div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '9px' }}>
                   <div>
-                    <div style={{ fontWeight: 'bold' }}>NAME:  Stacy Nelson   </div>
+                    <div style={{ fontWeight: 'bold' }}>NAME: [CONTRACTOR NAME] </div>
                     <div>Date: {new Date().toLocaleDateString()}</div>
                   </div>
                 </div>
