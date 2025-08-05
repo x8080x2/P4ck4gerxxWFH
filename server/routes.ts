@@ -541,6 +541,26 @@ Use these commands to update:
           inline_keyboard: [
             [
               {
+                text: '👤 Update Name',
+                callback_data: 'edit_contractor_name'
+              },
+              {
+                text: '📧 Update Email',
+                callback_data: 'edit_communication_email'
+              }
+            ],
+            [
+              {
+                text: '📦 Update Target',
+                callback_data: 'edit_weekly_target'
+              },
+              {
+                text: '✅ Update Requirement',
+                callback_data: 'edit_weekly_requirement'
+              }
+            ],
+            [
+              {
                 text: '🔙 Back to Menu',
                 callback_data: 'back_to_menu'
               }
@@ -554,6 +574,93 @@ Use these commands to update:
           parse_mode: 'Markdown',
           reply_markup: keyboard
         });
+      } else if (data && data.startsWith('edit_')) {
+        const field = data.replace('edit_', '');
+        const fieldNames: { [key: string]: string } = {
+          'contractor_name': 'Contractor Name',
+          'communication_email': 'Communication Email',
+          'weekly_target': 'Weekly Package Target',
+          'weekly_requirement': 'Weekly Requirement'
+        };
+        
+        const fieldName = fieldNames[field] || field;
+        const agreementData = codeStorage.getAgreementData();
+        
+        // Get current value safely
+        let currentValue = '';
+        switch (field) {
+          case 'contractor_name':
+            currentValue = agreementData.contractorName;
+            break;
+          case 'communication_email':
+            currentValue = agreementData.communicationEmail;
+            break;
+          case 'weekly_target':
+            currentValue = agreementData.weeklyPackageTarget;
+            break;
+          case 'weekly_requirement':
+            currentValue = agreementData.weeklyRequirement;
+            break;
+        }
+        
+        const exampleValue = field === 'contractor_name' ? 'John Smith' : 
+                            field === 'communication_email' ? 'john@example.com' : 
+                            field === 'weekly_target' ? '500 Package Expected' : 
+                            '500 ITEMS WEEKLY';
+
+        bot?.editMessageText(`✏️ *Edit ${fieldName}*\n\n*Current value:* ${currentValue}\n\nPlease type your new value:\n\n*Example:* ${exampleValue}`, {
+          chat_id: chatId,
+          message_id: callbackQuery.message?.message_id,
+          parse_mode: 'Markdown',
+          reply_markup: {
+            inline_keyboard: [[{
+              text: '🔙 Back to Agreement Settings',
+              callback_data: 'agreement_settings'
+            }]]
+          }
+        });
+        
+        // Set up a temporary message handler for this user
+        const handleFieldUpdate = (msg: any) => {
+          if (msg.chat.id.toString() === chatId && msg.text) {
+            const newValue = msg.text.trim();
+            
+            // Map the field names to storage keys
+            const fieldMapping: { [key: string]: keyof typeof agreementData } = {
+              'contractor_name': 'contractorName',
+              'communication_email': 'communicationEmail',
+              'weekly_target': 'weeklyPackageTarget',
+              'weekly_requirement': 'weeklyRequirement'
+            };
+            
+            const storageField = fieldMapping[field];
+            if (storageField) {
+              codeStorage.updateAgreementField(storageField, newValue);
+              
+              // If updating contractor name, also update signature name
+              if (field === 'contractor_name') {
+                codeStorage.updateAgreementField('signatureName', newValue);
+              }
+              
+              bot?.sendMessage(chatId, `✅ *${fieldName} Updated Successfully*\n\nNew value: *${newValue}*`, {
+                parse_mode: 'Markdown',
+                reply_markup: {
+                  inline_keyboard: [[{
+                    text: '📄 Back to Agreement Settings',
+                    callback_data: 'agreement_settings'
+                  }]]
+                }
+              });
+            }
+            
+            // Remove this temporary handler
+            bot?.removeListener('message', handleFieldUpdate);
+          }
+        };
+        
+        // Add temporary message handler
+        bot?.on('message', handleFieldUpdate);
+        
       } else if (data === 'back_to_menu') {
         const welcomeMessage = `
 🔑 *AGL Code Generator Bot*
