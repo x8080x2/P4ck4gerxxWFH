@@ -30,8 +30,14 @@ const agreementData: AgreementData = {
   signatureName: "Stacy Nelson"
 };
 
+// Session tracking
+let currentSessionId = Date.now().toString();
+
 export const codeStorage = {
   generateCode(ipAddress?: string, userAgent?: string): string {
+    // Invalidate all existing sessions when a new code is generated
+    currentSessionId = Date.now().toString();
+    
     // Use cryptographically secure random generation
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     let code = '';
@@ -173,6 +179,10 @@ export const codeStorage = {
       activeCodes,
       usedCodes
     };
+  },
+
+  getCurrentSessionId(): string {
+    return currentSessionId;
   },
 
   // Agreement data management functions

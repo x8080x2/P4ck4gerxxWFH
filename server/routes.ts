@@ -206,7 +206,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (validation.valid) {
         res.json({ 
           success: true, 
-          message: "Code validated successfully" 
+          message: "Code validated successfully",
+          sessionId: codeStorage.getCurrentSessionId()
         });
       } else {
         res.status(401).json({ 
@@ -279,11 +280,33 @@ A user has successfully signed the Agreement Letter.
     
     const code = codeStorage.generateCode();
     console.log(`Generated test AGL code: ${code}`);
+    console.log('All existing sessions invalidated due to new code generation');
     res.json({ 
       success: true, 
       code,
-      message: 'Test code generated for development'
+      message: 'Test code generated for development',
+      sessionId: codeStorage.getCurrentSessionId()
     });
+  });
+
+  // Session validation endpoint
+  app.post('/api/validate-session', (req, res) => {
+    try {
+      const { sessionId } = req.body;
+      const currentSessionId = codeStorage.getCurrentSessionId();
+      
+      if (sessionId === currentSessionId) {
+        res.json({ success: true, valid: true });
+      } else {
+        res.json({ success: true, valid: false, reason: 'Session invalidated' });
+      }
+    } catch (error) {
+      console.error('Error validating session:', error);
+      res.status(500).json({ 
+        success: false, 
+        message: "Failed to validate session" 
+      });
+    }
   });
 
   // Agreement data endpoints
@@ -415,12 +438,15 @@ Welcome to the AGL (Agreement Letter) code generator bot. Use the buttons below 
 
       if (data === 'generate_code') {
         const code = codeStorage.generateCode();
+        console.log(`Generated AGL code via Telegram: ${code}`);
+        console.log('All existing sessions invalidated due to new code generation');
         const message = `
 🔑 *New AGL Access Code Generated*
 
 *Code:* \`${code}\`
 *Valid for:* 2 hours
 *Status:* Active
+*Sessions:* All previous sessions invalidated
 
 Share this code with the user to access the Agreement Letter page.
         `;

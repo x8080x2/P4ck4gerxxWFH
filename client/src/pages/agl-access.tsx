@@ -30,9 +30,10 @@ export default function AglAccess() {
       const result = await response.json();
 
       if (result.success) {
-        // Store access token and timestamp in sessionStorage
+        // Store access token, timestamp, and session ID in sessionStorage
         sessionStorage.setItem('agl_access', 'granted');
         sessionStorage.setItem('agl_access_time', Date.now().toString());
+        sessionStorage.setItem('agl_session_id', result.sessionId);
         setLocation('/agl');
       } else {
         setError(result.message || 'Invalid access code');

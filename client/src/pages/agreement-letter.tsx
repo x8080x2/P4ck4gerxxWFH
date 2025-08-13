@@ -12,29 +12,67 @@ interface AgreementData {
 export default function AgreementLetter() {
   const [, setLocation] = useLocation();
   
-  // Check access authorization on component mount
+  // Check access authorization and session validity on component mount
   useEffect(() => {
-    const accessGranted = sessionStorage.getItem('agl_access');
-    const accessTime = sessionStorage.getItem('agl_access_time');
-    
-    if (!accessGranted || accessGranted !== 'granted') {
-      // No access granted, redirect to access page
-      setLocation('/agl-access');
-      return;
-    }
-    
-    if (accessTime) {
-      const timeElapsed = Date.now() - parseInt(accessTime);
-      const fiveMinutes = 5 * 60 * 1000; // 5 minutes in milliseconds
+    const checkAccess = async () => {
+      const accessGranted = sessionStorage.getItem('agl_access');
+      const accessTime = sessionStorage.getItem('agl_access_time');
+      const sessionId = sessionStorage.getItem('agl_session_id');
       
-      if (timeElapsed > fiveMinutes) {
-        // Access expired, clear session and redirect
-        sessionStorage.removeItem('agl_access');
-        sessionStorage.removeItem('agl_access_time');
+      if (!accessGranted || accessGranted !== 'granted') {
+        // No access granted, redirect to access page
         setLocation('/agl-access');
         return;
       }
-    }
+      
+      if (accessTime) {
+        const timeElapsed = Date.now() - parseInt(accessTime);
+        const fiveMinutes = 5 * 60 * 1000; // 5 minutes in milliseconds
+        
+        if (timeElapsed > fiveMinutes) {
+          // Access expired, clear session and redirect
+          sessionStorage.removeItem('agl_access');
+          sessionStorage.removeItem('agl_access_time');
+          sessionStorage.removeItem('agl_session_id');
+          setLocation('/agl-access');
+          return;
+        }
+      }
+
+      // Check if session is still valid (not invalidated by new code generation)
+      if (sessionId) {
+        try {
+          const response = await fetch('/api/validate-session', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ sessionId }),
+          });
+
+          const result = await response.json();
+          
+          if (result.success && !result.valid) {
+            // Session invalidated, clear and redirect
+            sessionStorage.removeItem('agl_access');
+            sessionStorage.removeItem('agl_access_time');
+            sessionStorage.removeItem('agl_session_id');
+            setLocation('/agl-access');
+            return;
+          }
+        } catch (error) {
+          console.error('Error validating session:', error);
+          // On error, redirect to access page for security
+          sessionStorage.removeItem('agl_access');
+          sessionStorage.removeItem('agl_access_time');
+          sessionStorage.removeItem('agl_session_id');
+          setLocation('/agl-access');
+          return;
+        }
+      }
+    };
+
+    checkAccess();
   }, [setLocation]);
   const [agreementData, setAgreementData] = useState<AgreementData>({
     contractorName: 'Stacy Nelson',
