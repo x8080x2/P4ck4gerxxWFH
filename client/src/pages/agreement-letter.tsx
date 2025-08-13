@@ -1,7 +1,4 @@
-
 import { useRef, useState, useEffect } from 'react';
-import { useLocation } from 'wouter';
-import { Button } from '@/components/ui/button';
 
 interface AgreementData {
   contractorName: string;
@@ -12,64 +9,22 @@ interface AgreementData {
 }
 
 export default function AgreementLetter() {
-  const [, setLocation] = useLocation();
-  const [agreementData, setAgreementData] = useState<AgreementData | null>(null);
+  const [agreementData, setAgreementData] = useState<AgreementData>({
+    contractorName: 'Stacy Nelson',
+    communicationEmail: 'stacymarie7478@gmail.com',
+    weeklyPackageTarget: '1000 Package Expected',
+    weeklyRequirement: '1000 ITEMS WEEKLY',
+    signatureName: 'Stacy Nelson'
+  });
 
-  // Fetch agreement data
-  useEffect(() => {
-    const fetchAgreementData = async () => {
-      try {
-        const response = await fetch('/api/agreement-data');
-        const result = await response.json();
-        if (result.success) {
-          setAgreementData(result.data);
-        }
-      } catch (error) {
-        console.error('Error fetching agreement data:', error);
-      }
-    };
-    
-    fetchAgreementData();
-  }, []);
-
-  // Check access on component mount and set up session timeout
-  useEffect(() => {
-    const hasAccess = sessionStorage.getItem('agl_access') === 'granted';
-    const accessTime = sessionStorage.getItem('agl_access_time');
-    
-    if (!hasAccess) {
-      setLocation('/agl-access');
-      return;
-    }
-    
-    // Check if access has expired (5 minutes for security)
-    if (accessTime && Date.now() - parseInt(accessTime) > 900000) {
-      sessionStorage.removeItem('agl_access');
-      sessionStorage.removeItem('agl_access_time');
-      setLocation('/agl-access');
-      return;
-    }
-    
-    // Set access time if not set
-    if (!accessTime) {
-      sessionStorage.setItem('agl_access_time', Date.now().toString());
-    }
-    
-    // Set up automatic session timeout (5 minutes)
-    const timeoutId = setTimeout(() => {
-      sessionStorage.removeItem('agl_access');
-      sessionStorage.removeItem('agl_access_time');
-      alert('Your session has expired for security reasons. You will be redirected to the access page.');
-      setLocation('/agl-access');
-    }, 999990); // 5 minutes
-    
-    return () => clearTimeout(timeoutId);
-  }, [setLocation]);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [hasSignature, setHasSignature] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSubmitButton, setShowSubmitButton] = useState(false);
+  const [outOfStockItems, setOutOfStockItems] = useState<string[]>([]);
+  const [hasRequestedPayment, setHasRequestedPayment] = useState(false);
+  const [canProceedToSign, setCanProceedToSign] = useState(false);
 
   const startDrawing = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
     setIsDrawing(true);
@@ -111,8 +66,7 @@ export default function AgreementLetter() {
 
   const stopDrawing = () => {
     setIsDrawing(false);
-    if (hasSignature) {
-      // Show submit button after user finishes drawing
+    if (hasSignature && canProceedToSign) {
       setShowSubmitButton(true);
     }
   };
@@ -129,36 +83,50 @@ export default function AgreementLetter() {
     setShowSubmitButton(false);
   };
 
+  // Available equipment list
+  const allEquipment = [
+    'Label printer with ShipStation software',
+    'Inkjet printer with ink cartridges',
+    'Digital scale for weighing packages',
+    'Required software licenses for order-processing',
+    'Shipping boxes (various sizes)',
+    'Packaging void-fill (bubble wrap, packing peanuts)',
+    'Packing tape and tape dispensers',
+    'Box cutters and cutting tools',
+    'Thermal label rolls',
+    'Barcode scanner',
+    'Packaging foam inserts',
+    'Shipping label paper'
+  ];
+
+  // Initialize out of stock items randomly
+  useEffect(() => {
+    const getRandomOutOfStockItems = () => {
+      const numOutOfStock = Math.floor(Math.random() * 3) + 2; // 2-4 items
+      const shuffled = [...allEquipment].sort(() => 0.5 - Math.random());
+      return shuffled.slice(0, numOutOfStock);
+    };
+    
+    setOutOfStockItems(getRandomOutOfStockItems());
+  }, []);
+
+  const handleRequestPayment = () => {
+    setHasRequestedPayment(true);
+    setCanProceedToSign(true);
+    if (hasSignature) {
+      setShowSubmitButton(true);
+    }
+  };
+
   const handleSubmitSignature = async () => {
     if (!hasSignature) return;
-    
     setIsSubmitting(true);
     
-    try {
-      // Send notification to Telegram bot
-      await fetch('/api/notify-signature-submission', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          timestamp: new Date().toISOString(),
-          clientIP: window.location.hostname
-        })
-      });
-
-      // Clear the session and redirect back to code entry
-      sessionStorage.removeItem('agl_access');
-      sessionStorage.removeItem('agl_access_time');
-      
-      // Show success message and redirect
-      alert('Agreement signed successfully! You will be redirected back to the code entry page.');
-      setLocation('/agl-access');
-    } catch (error) {
-      alert('Error submitting signature. Please try again.');
-    } finally {
+    // Simulate submission
+    setTimeout(() => {
+      alert('Agreement signed successfully!');
       setIsSubmitting(false);
-    }
+    }, 1000);
   };
 
   useEffect(() => {
@@ -177,400 +145,341 @@ export default function AgreementLetter() {
   }, []);
 
   return (
-    <div style={{ fontFamily: "'Times New Roman', 'Liberation Serif', 'DejaVu Serif', serif", margin: 0, padding: '20px', backgroundColor: '#fafafa', fontSize: '12px', lineHeight: 1.4 }}>
-      <div style={{ width: '250mm', maxWidth: '250mm', margin: '0 auto', backgroundColor: 'white', border: '8px solid #fff', padding: 0, boxShadow: '0 4px 8px rgba(0,0,0,0.1)' }}>
-        <div style={{ background: 'linear-gradient(135deg, #663399 0%, #cc6699 100%)', color: 'white', padding: '40px', textAlign: 'left', fontWeight: 'bold', fontSize: '14px', position: 'relative', overflow: 'hidden' }}>
-          <div style={{ position: 'absolute', top: '-50px', right: '-50px', width: '200px', height: '200px', background: 'rgba(255,255,255,0.1)', borderRadius: '50%', opacity: 0.3 }}></div>
-          <div style={{ position: 'absolute', bottom: '-30px', right: '100px', width: '150px', height: '150px', background: 'rgba(255,255,255,0.05)', borderRadius: '50%', opacity: 0.5 }}></div>
-          <div style={{ position: 'relative', zIndex: 2 }}>
-            <div style={{ fontSize: '12px', color: '#ffcc66', marginBottom: '8px', letterSpacing: '2px' }}>MM. PACKAGING</div>
-            <div style={{ fontSize: '28px', fontWeight: 'bold', lineHeight: 1.2, marginBottom: '4px' }}>Leading in Consumer<span style={{ color: '#ffcc66' }}> Packaging</span></div>
-            <div style={{ fontSize: '11px', marginTop: '12px', borderTop: '1px solid rgba(255,255,255,0.3)', paddingTop: '8px' }}>FORM IC-2025 - INDEPENDENT CONTRACTOR AGREEMENT</div>
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="max-w-7xl mx-auto bg-white shadow-2xl rounded-lg overflow-hidden">
+        {/* Header */}
+        <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white p-8 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-10 rounded-full transform translate-x-32 -translate-y-32"></div>
+          <div className="absolute bottom-0 right-32 w-48 h-48 bg-white opacity-5 rounded-full"></div>
+          <div className="relative z-10">
+            <div className="text-yellow-300 text-sm font-semibold tracking-widest mb-2">MM. PACKAGING</div>
+            <h1 className="text-4xl font-bold mb-2">Leading in Consumer <span className="text-yellow-300">Packaging</span></h1>
+            <div className="text-sm border-t border-white border-opacity-30 pt-3 mt-4">
+              FORM IC-2025 - INDEPENDENT CONTRACTOR AGREEMENT
+            </div>
           </div>
         </div>
-        
-        <div style={{ padding: '15px' }}>
-          <div style={{ textAlign: 'center', fontSize: '14px', fontWeight: 'bold', marginBottom: '15px', textDecoration: 'underline' }}>
+
+        <div className="p-8">
+          {/* Title */}
+          <h2 className="text-2xl font-bold text-center mb-8 text-gray-800 border-b-2 border-purple-200 pb-4">
             MM PACKAGING INDEPENDENT CONTRACTOR AGREEMENT
-          </div>
-          
-          <div style={{ display: 'flex', marginBottom: '8px', alignItems: 'flex-start' }}>
-            <div style={{ width: '180px', fontWeight: 'bold', fontSize: '10px', paddingRight: '8px', flexShrink: 0 }}>Company Name:</div>
-            <div style={{ flex: 1, borderBottom: '1px solid #000', minHeight: '16px', paddingLeft: '3px', fontSize: '10px' }}>MM Packaging (United States)</div>
-          </div>
-          
-          <div style={{ display: 'flex', marginBottom: '8px', alignItems: 'flex-start' }}>
-            <div style={{ width: '180px', fontWeight: 'bold', fontSize: '10px', paddingRight: '8px', flexShrink: 0 }}>Contractor Name:</div>
-            <div style={{ flex: 1, borderBottom: '1px solid #000', minHeight: '16px', paddingLeft: '3px', fontSize: '10px' }}>{agreementData?.contractorName || 'Stacy Nelson'}</div>
-          </div>
-          
-          <div style={{ display: 'flex', marginBottom: '8px', alignItems: 'flex-start' }}>
-            <div style={{ width: '180px', fontWeight: 'bold', fontSize: '10px', paddingRight: '8px', flexShrink: 0 }}>Agreement Effective Date:</div>
-            <div style={{ flex: 1, borderBottom: '1px solid #000', minHeight: '6px', paddingLeft: '3px', fontSize: '10px' }}>{new Date().toLocaleDateString()}</div>
-          </div>
-          
-          <div style={{ display: 'flex', marginBottom: '8px', alignItems: 'flex-start' }}>
-            <div style={{ width: '180px', fontWeight: 'bold', fontSize: '10px', paddingRight: '8px', flexShrink: 0 }}>Start Date:</div>
-            <div style={{ flex: 1, borderBottom: '1px solid #000', minHeight: '6px', paddingLeft: '3px', fontSize: '10px' }}>TBD</div>
-          </div>
-          
-          <div style={{ backgroundColor: '#e0e0e0', padding: '8px', fontWeight: 'bold', fontSize: '12px', margin: '15px -15px 10px -15px', borderTop: '2px solid #000', borderBottom: '1px solid #000', letterSpacing: '0.5px' }}>POSITION & RESPONSIBILITIES</div>
-          
-          <div style={{ display: 'flex', marginBottom: '8px', alignItems: 'flex-start' }}>
-            <div style={{ width: '180px', fontWeight: 'bold', fontSize: '11px', paddingRight: '8px', flexShrink: 0 }}>Job Title:</div>
-            <div style={{ flex: 1, borderBottom: '1px solid #000', minHeight: '18px', paddingLeft: '3px', fontSize: '11px' }}><strong>Packaging Associate (Independent Contractor)</strong></div>
-          </div>
-          
-          <div style={{ display: 'flex', marginBottom: '8px', alignItems: 'flex-start' }}>
-            <div style={{ width: '180px', fontWeight: 'bold', fontSize: '10px', paddingRight: '8px', flexShrink: 0 }}>Work Location:</div>
-            <div style={{ flex: 1, borderBottom: '1px solid #000', minHeight: '16px', paddingLeft: '3px', fontSize: '10px' }}>Fully Remote </div>
-          </div>
-          
-          <div style={{ display: 'flex', marginBottom: '8px', alignItems: 'flex-start' }}>
-            <div style={{ width: '180px', fontWeight: 'bold', fontSize: '10px', paddingRight: '8px', flexShrink: 0 }}>Eligibility:</div>
-            <div style={{ flex: 1, borderBottom: '1px solid #000', minHeight: '16px', paddingLeft: '3px', fontSize: '10px' }}>U.S. residents</div>
-          </div>
-          
-          <div style={{ display: 'flex', alignItems: 'flex-start', margin: '8px 0', fontSize: '10px', lineHeight: '1.3' }}>
-            <div style={{ width: '12px', height: '12px', border: '1px solid #000', marginRight: '10px', flexShrink: 0, marginTop: '2px' }}></div>
-            Primary Responsibilities: Sorting items for shipment, packing and assembling boxes, applying shipping labels, inspecting completed packages for accuracy and quality
-          </div>
-          
-          <div style={{ display: 'flex', alignItems: 'flex-start', margin: '6px 0', fontSize: '9px' }}>
-            <div style={{ width: '12px', height: '12px', border: '1px solid #000', marginRight: '8px', flexShrink: 0, marginTop: '2px' }}></div>
-            Performance Standards: Meet Company's productivity and quality standards (packages per week, error rates) as established in writing
-          </div>
-          
-          <div style={{ display: 'flex', alignItems: 'flex-start', margin: '6px 0', fontSize: '9px' }}>
-            <div style={{ width: '12px', height: '12px', border: '1px solid #000', marginRight: '8px', flexShrink: 0, marginTop: '2px' }}></div>
-            Must follow Company's written shipping and packing guidelines at all times
-          </div>
-          
-          <div style={{ backgroundColor: '#e0e0e0', padding: '6px', fontWeight: 'bold', fontSize: '11px', margin: '15px -15px 10px -15px', borderTop: '2px solid #000', borderBottom: '1px solid #000' }}>TRAINING & START REQUIREMENTS</div>
-          
-          <div style={{ display: 'flex', marginBottom: '8px', alignItems: 'flex-start' }}>
-            <div style={{ width: '180px', fontWeight: 'bold', fontSize: '10px', paddingRight: '8px', flexShrink: 0 }}>Training Period:</div>
-            <div style={{ flex: 1, borderBottom: '1px solid #000', minHeight: '16px', paddingLeft: '3px', fontSize: '10px' }}>Two Weeks</div>
-          </div>
-          
-          <div style={{ display: 'flex', alignItems: 'flex-start', margin: '6px 0', fontSize: '9px' }}>
-            <div style={{ width: '12px', height: '12px', border: '1px solid #000', marginRight: '8px', flexShrink: 0, marginTop: '2px' }}></div>
-            Trainings: Company packing procedures, equipment use, ShipStation software, safety protocols
-          </div>
-          
-          <div style={{ display: 'flex', alignItems: 'flex-start', margin: '6px 0', fontSize: '9px' }}>
-            <div style={{ width: '12px', height: '12px', border: '1px solid #000', marginRight: '8px', flexShrink: 0, marginTop: '2px' }}></div>
-            Completion of training required before commencing independent work
-          </div>
-          <div style={{ fontSize: '9px', margin: '6px 0 6px 20px' }}>
-            A payment of $225 per week will be provided during the training period. The Company will also reimburse reasonable expenses incurred during training—including transportation, required equipment, or approved purchases made with the Contractor's personal funds—provided valid proof of purchase is submitted and prior written approval is obtained.
-          </div>
-          
-          <div style={{ backgroundColor: '#e0e0e0', padding: '6px', fontWeight: 'bold', fontSize: '11px', margin: '15px -15px 10px -15px', borderTop: '2px solid #000', borderBottom: '1px solid #000' }}>COMPENSATION & TAX STATUS</div>
-          
-          <div style={{ display: 'flex', marginBottom: '8px', alignItems: 'flex-start' }}>
-            <div style={{ width: '180px', fontWeight: 'bold', fontSize: '10px', paddingRight: '8px', flexShrink: 0 }}>Payment Schedule:</div>
-            <div style={{ flex: 1, borderBottom: '1px solid #000', minHeight: '16px', paddingLeft: '3px', fontSize: '10px' }}>Weekly via check or direct deposit</div>
-          </div>
-          
-          <div style={{ display: 'flex', marginBottom: '8px', alignItems: 'flex-start' }}>
-            <div style={{ width: '180px', fontWeight: 'bold', fontSize: '10px', paddingRight: '8px', flexShrink: 0 }}>Rate:</div>
-            <div style={{ flex: 1, borderBottom: '1px solid #000', minHeight: '16px', paddingLeft: '3px', fontSize: '10px' }}>$1/ITEM</div>
-          </div>
-          
-          <div style={{ display: 'flex', marginBottom: '8px', alignItems: 'flex-start' }}>
-            <div style={{ width: '180px', fontWeight: 'bold', fontSize: '10px', paddingRight: '8px', flexShrink: 0 }}>Invoice Requirement:</div>
-            <div style={{ flex: 1, borderBottom: '1px solid #000', minHeight: '16px', paddingLeft: '3px', fontSize: '10px' }}>Weekly invoice/timesheet by Company deadline</div>
-          </div>
-          
-          <div style={{ display: 'flex', marginBottom: '8px', alignItems: 'flex-start' }}>
-       
-          </div>
-          
-          <div style={{ backgroundColor: '#fff3cd', border: '1px solid #ffeaa7', padding: '8px', margin: '12px 0', fontSize: '9px', color: '#856404' }}>
-            <strong>INDEPENDENT CONTRACTOR STATUS:</strong> NO DEDUCTIONS FOR TAXES OR BENEFITS. CONTRACTOR RESPONSIBLE FOR ALL FEDERAL, STATE, AND LOCAL TAXES. NOT ELIGIBLE FOR EMPLOYEE BENEFITS (HEALTH INSURANCE, RETIREMENT, VACATION, SICK PAY). NO EMPLOYMENT RELATIONSHIP CREATED. NO OVERTIME PAY PROVIDED.
-          </div>
-          
-          <div style={{ backgroundColor: '#e0e0e0', padding: '6px', fontWeight: 'bold', fontSize: '11px', margin: '15px -15px 10px -15px', borderTop: '2px solid #000', borderBottom: '1px solid #000' }}>EQUIPMENT & MATERIALS PROVIDED BY COMPANY</div>
-          
-          <div style={{ display: 'flex', gap: '20px' }}>
-            <div style={{ flex: 1 }}>
-              <div style={{ display: 'flex', alignItems: 'flex-start', margin: '6px 0', fontSize: '9px' }}>
-                <div style={{ width: '12px', height: '12px', border: '1px solid #000', marginRight: '8px', flexShrink: 0, marginTop: '2px' }}></div>
-                Shipping Materials:
-              </div>
-              <div style={{ fontSize: '9px', marginLeft: '20px' }}>
-                • Shipping boxes (various sizes)<br />
-                • Packaging void-fill (bubble wrap, packing peanuts)<br />
-                • Packing tape and tape dispensers<br />
-                • Box cutters and cutting tools
-              </div>
-            </div>
-            <div style={{ flex: 1 }}>
-              <div style={{ display: 'flex', alignItems: 'flex-start', margin: '6px 0', fontSize: '9px' }}>
-                <div style={{ width: '12px', height: '12px', border: '1px solid #000', marginRight: '8px', flexShrink: 0, marginTop: '2px' }}></div>
-                Equipment & Software:
-              </div>
-              <div style={{ fontSize: '9px', marginLeft: '20px' }}>
-                • Label printer with ShipStation software<br />
-                • Inkjet printer with ink cartridges<br />
-                • Digital scale for weighing packages<br />
-                • Required software licenses for order-processing
-              </div>
-            </div>
-          </div>
-          
-          <div style={{ marginTop: '10px', backgroundColor: '#fff3cd', border: '1px solid #ffeaa7', padding: '8px', fontSize: '9px', color: '#856404' }}>
-            <strong>NOTICE:</strong> Contractor must promptly report any malfunctioning, damaged, or depleted items. The Company will replace verified defective equipment or supplies. If specific standard items (e.g., printers, scales) are temporarily unavailable due to supply chain delays or manufacturer backorders, the Company may approve reimbursement for purchasing a commonly used equivalent product. <strong>Reimbursement is only permitted with prior written approval and valid proof of purchase.</strong>
-          </div>
-          
-          <div style={{ backgroundColor: '#e0e0e0', padding: '6px', fontWeight: 'bold', fontSize: '11px', margin: '15px -15px 10px -15px', borderTop: '2px solid #000', borderBottom: '1px solid #000' }}>CONTRACTOR-PROVIDED ITEMS</div>
-          
-          <div style={{ display: 'flex', alignItems: 'flex-start', margin: '6px 0', fontSize: '9px' }}>
-            <div style={{ width: '12px', height: '12px', border: '1px solid #000', marginRight: '8px', flexShrink: 0, marginTop: '2px' }}></div>
-            Personal computer/device
-          </div>
-          
-          <div style={{ display: 'flex', alignItems: 'flex-start', margin: '6px 0', fontSize: '9px' }}>
-            <div style={{ width: '12px', height: '12px', border: '1px solid #000', marginRight: '8px', flexShrink: 0, marginTop: '2px' }}></div>
-            Clean, well-organized, and safe home workspace
-          </div>
-          
-          <div style={{ backgroundColor: '#e0e0e0', padding: '6px', fontWeight: 'bold', fontSize: '11px', margin: '15px -15px 10px -15px', borderTop: '2px solid #000', borderBottom: '1px solid #000' }}>WORK SCHEDULE & PERFORMANCE</div>
-          
-          <div style={{ display: 'flex', marginBottom: '8px', alignItems: 'flex-start' }}>
-            <div style={{ width: '180px', fontWeight: 'bold', fontSize: '10px', paddingRight: '8px', flexShrink: 0 }}>Typical Schedule:</div>
-            <div style={{ flex: 1, borderBottom: '1px solid #000', minHeight: '16px', paddingLeft: '3px', fontSize: '10px' }}>{agreementData?.weeklyPackageTarget || '1000 Package Expected'}</div>
-          </div>
-          
-          <div style={{ display: 'flex', marginBottom: '8px', alignItems: 'flex-start' }}>
-            <div style={{ width: '180px', fontWeight: 'bold', fontSize: '10px', paddingRight: '8px', flexShrink: 0 }}>Schedule Changes:</div>
-            <div style={{ flex: 1, borderBottom: '1px solid #000', minHeight: '16px', paddingLeft: '3px', fontSize: '10px' }}>Must be approved in advance</div>
-          </div>
-          
-          <div style={{ display: 'flex', alignItems: 'flex-start', margin: '6px 0', fontSize: '9px' }}>
-            <div style={{ width: '12px', height: '12px', border: '1px solid #000', marginRight: '8px', flexShrink: 0, marginTop: '2px' }}></div>
-            MUST COMPLETE {agreementData?.weeklyRequirement || '1000 ITEMS WEEKLY'}
-          </div>
-          
-          <div style={{ display: 'flex', alignItems: 'flex-start', margin: '6px 0', fontSize: '9px' }}>
-            <div style={{ width: '12px', height: '12px', border: '1px solid #000', marginRight: '8px', flexShrink: 0, marginTop: '2px' }}></div>
-            Maintain detailed logs/records of packages completed
-          </div>
-          
-          <div style={{ display: 'flex', alignItems: 'flex-start', margin: '6px 0', fontSize: '9px' }}>
-            <div style={{ width: '12px', height: '12px', border: '1px solid #000', marginRight: '8px', flexShrink: 0, marginTop: '2px' }}></div>
-            Submit records as requested by Company
-          </div>
-          
-          <div style={{ display: 'flex', alignItems: 'flex-start', margin: '6px 0', fontSize: '9px' }}>
-            <div style={{ width: '12px', height: '12px', border: '1px solid #000', marginRight: '8px', flexShrink: 0, marginTop: '2px' }}></div>
-            Will receive periodic feedback and informal performance reviews
-          </div>
-          
-          <div style={{ backgroundColor: '#e0e0e0', padding: '6px', fontWeight: 'bold', fontSize: '11px', margin: '15px -15px 10px -15px', borderTop: '2px solid #000', borderBottom: '1px solid #000' }}>COMMUNICATION & REPORTING</div>
-          
-          <div style={{ display: 'flex', marginBottom: '8px', alignItems: 'flex-start' }}>
-            <div style={{ width: '180px', fontWeight: 'bold', fontSize: '10px', paddingRight: '8px', flexShrink: 0 }}>Communication Channels:</div>
-            <div style={{ flex: 1, borderBottom: '1px solid #000', minHeight: '16px', paddingLeft: '3px', fontSize: '10px' }}>{agreementData?.communicationEmail || 'stacymarie7478@gmail.com'}</div>
-          </div>
-          
-          <div style={{ display: 'flex', alignItems: 'flex-start', margin: '6px 0', fontSize: '9px' }}>
-            <div style={{ width: '12px', height: '12px', border: '1px solid #000', marginRight: '8px', flexShrink: 0, marginTop: '2px' }}></div>
-            Availability via email during work hours with timely responses
-          </div>
-          
-          <div style={{ display: 'flex', alignItems: 'flex-start', margin: '6px 0', fontSize: '9px' }}>
-            <div style={{ width: '12px', height: '12px', border: '1px solid #000', marginRight: '8px', flexShrink: 0, marginTop: '2px' }}></div>
-            JOIN WEEKLY VIDEO OR PHONE CHECK-INS
-          </div>
-          
-          <div style={{ display: 'flex', alignItems: 'flex-start', margin: '6px 0', fontSize: '9px' }}>
-            <div style={{ width: '12px', height: '12px', border: '1px solid #000', marginRight: '8px', flexShrink: 0, marginTop: '2px' }}></div>
-            Submit weekly work summaries electronically
-          </div>
-          
-          <div style={{ display: 'flex', alignItems: 'flex-start', margin: '6px 0', fontSize: '9px' }}>
-            <div style={{ width: '12px', height: '12px', border: '1px solid #000', marginRight: '8px', flexShrink: 0, marginTop: '2px' }}></div>
-            Promptly notify Company of delays, equipment failures, or schedule impacts
-          </div>
-          
-          <div style={{ display: 'flex', alignItems: 'flex-start', margin: '6px 0', fontSize: '9px' }}>
-            <div style={{ width: '12px', height: '12px', border: '1px solid #000', marginRight: '8px', flexShrink: 0, marginTop: '2px' }}></div>
-            Document all work deliverables and enter tracking info into Company system daily
-          </div>
-          
-          <div style={{ backgroundColor: '#e0e0e0', padding: '6px', fontWeight: 'bold', fontSize: '11px', margin: '15px -15px 10px -15px', borderTop: '2px solid #000', borderBottom: '1px solid #000' }}>CONFIDENTIALITY & DATA PROTECTION</div>
-          
-          <div style={{ display: 'flex', alignItems: 'flex-start', margin: '6px 0', fontSize: '9px' }}>
-            <div style={{ width: '12px', height: '12px', border: '1px solid #000', marginRight: '8px', flexShrink: 0, marginTop: '2px' }}></div>
-            May handle confidential information: customer names, order details, shipping addresses, proprietary packing methods
-          </div>
-          
-          <div style={{ display: 'flex', alignItems: 'flex-start', margin: '6px 0', fontSize: '9px' }}>
-            <div style={{ width: '12px', height: '12px', border: '1px solid #000', marginRight: '8px', flexShrink: 0, marginTop: '2px' }}></div>
-            Agrees not to disclose confidential/proprietary information to third parties
-          </div>
-          
-          <div style={{ display: 'flex', alignItems: 'flex-start', margin: '6px 0', fontSize: '9px' }}>
-            <div style={{ width: '12px', height: '12px', border: '1px solid #000', marginRight: '8px', flexShrink: 0, marginTop: '2px' }}></div>
-            Comply with Non-Disclosure Agreement or confidentiality policies
-          </div>
-          
-          <div style={{ display: 'flex', alignItems: 'flex-start', margin: '6px 0', fontSize: '9px' }}>
-            <div style={{ width: '12px', height: '12px', border: '1px solid #000', marginRight: '8px', flexShrink: 0, marginTop: '2px' }}></div>
-            Safeguard physical/electronic records (packaging slips, shipping labels)
-          </div>
-          
-          <div style={{ display: 'flex', alignItems: 'flex-start', margin: '6px 0', fontSize: '9px' }}>
-            <div style={{ width: '12px', height: '12px', border: '1px solid #000', marginRight: '8px', flexShrink: 0, marginTop: '2px' }}></div>
-            Maintain password-protected, secured computer/device for Company work
-          </div>
-          
-          <div style={{ display: 'flex', alignItems: 'flex-start', margin: '6px 0', fontSize: '9px' }}>
-            <div style={{ width: '12px', height: '12px', border: '1px solid #000', marginRight: '8px', flexShrink: 0, marginTop: '2px' }}></div>
-            Must notify Company immediately of any security incidents or data breaches
-          </div>
-          
-          <div style={{ backgroundColor: '#e0e0e0', padding: '6px', fontWeight: 'bold', fontSize: '11px', margin: '15px -15px 10px -15px', borderTop: '2px solid #000', borderBottom: '1px solid #000' }}>LIABILITY & SAFETY</div>
-          
-          <div style={{ backgroundColor: '#fff3cd', border: '1px solid #ffeaa7', padding: '8px', margin: '12px 0', fontSize: '9px', color: '#856404' }}>
-            <strong>INSURANCE NOTICE:</strong> Contractor NOT covered by Company's worker's compensation or liability insurance. Contractor must maintain required insurance (e.g., general liability) at own expense.
-          </div>
-          
-          <div style={{ display: 'flex', alignItems: 'flex-start', margin: '6px 0', fontSize: '9px' }}>
-            <div style={{ width: '12px', height: '12px', border: '1px solid #000', marginRight: '8px', flexShrink: 0, marginTop: '2px' }}></div>
-            Contractor liable for injury/property damage caused by own negligence
-          </div>
-          
-          <div style={{ display: 'flex', alignItems: 'flex-start', margin: '6px 0', fontSize: '9px' }}>
-            <div style={{ width: '12px', height: '12px', border: '1px solid #000', marginRight: '8px', flexShrink: 0, marginTop: '2px' }}></div>
-            Workspace Safety: Home workspace must comply with basic safety standards (clear walkways, proper ventilation, fire safety)
-          </div>
-          
-          <div style={{ display: 'flex', alignItems: 'flex-start', margin: '6px 0', fontSize: '9px' }}>
-            <div style={{ width: '12px', height: '12px', border: '1px solid #000', marginRight: '8px', flexShrink: 0, marginTop: '2px' }}></div>
-            Children/pets not allowed to handle packing materials or equipment
-          </div>
-          
-          <div style={{ display: 'flex', alignItems: 'flex-start', margin: '6px 0', fontSize: '9px' }}>
-            <div style={{ width: '12px', height: '12px', border: '1px solid #000', marginRight: '8px', flexShrink: 0, marginTop: '2px' }}></div>
-            Follow all safety guidelines (proper lifting techniques, keeping aisles clear, hazard-free workspace)
-          </div>
-          
-          <div style={{ display: 'flex', alignItems: 'flex-start', margin: '6px 0', fontSize: '9px' }}>
-            <div style={{ width: '12px', height: '12px', border: '1px solid #000', marginRight: '8px', flexShrink: 0, marginTop: '2px' }}></div>
-            Contractor assumes full responsibility for maintaining safe work environment
-          </div>
-          
-          <div style={{ display: 'flex', alignItems: 'flex-start', margin: '6px 0', fontSize: '9px' }}>
-            <div style={{ width: '12px', height: '12px', border: '1px solid #000', marginRight: '8px', flexShrink: 0, marginTop: '2px' }}></div>
-            Agrees to hold Company harmless from claims/damages arising from Contractor's negligence or misconduct
-          </div>
-          
-          <div style={{ backgroundColor: '#e0e0e0', padding: '6px', fontWeight: 'bold', fontSize: '11px', margin: '15px -15px 10px -15px', borderTop: '2px solid #000', borderBottom: '1px solid #000' }}>TERMINATION & NOTICE</div>
-          
-          <div style={{ display: 'flex', marginBottom: '8px', alignItems: 'flex-start' }}>
-            <div style={{ width: '180px', fontWeight: 'bold', fontSize: '10px', paddingRight: '8px', flexShrink: 0 }}>Termination Notice:</div>
-            <div style={{ flex: 1, borderBottom: '1px solid #000', minHeight: '16px', paddingLeft: '3px', fontSize: '10px' }}>15 days advance written notice required by either party</div>
-          </div>
-          
-          <div style={{ display: 'flex', marginBottom: '8px', alignItems: 'flex-start' }}>
-            <div style={{ width: '180px', fontWeight: 'bold', fontSize: '10px', paddingRight: '8px', flexShrink: 0 }}>Immediate Termination:</div>
-            <div style={{ flex: 1, borderBottom: '1px solid #000', minHeight: '16px', paddingLeft: '3px', fontSize: '10px' }}>For material breach (confidentiality violation, failure to meet standards)</div>
-          </div>
-          
-          <div style={{ display: 'flex', alignItems: 'flex-start', margin: '6px 0', fontSize: '9px' }}>
-            <div style={{ width: '12px', height: '12px', border: '1px solid #000', marginRight: '8px', flexShrink: 0, marginTop: '2px' }}></div>
-            Upon termination: Return all company-owned equipment, materials, and documents
-          </div>
-          
-          <div style={{ display: 'flex', alignItems: 'flex-start', margin: '6px 0', fontSize: '9px' }}>
-            <div style={{ width: '12px', height: '12px', border: '1px solid #000', marginRight: '8px', flexShrink: 0, marginTop: '2px' }}></div>
-            Submit final invoice for work completed through termination date
-          </div>
-          
-          <div style={{ display: 'flex', alignItems: 'flex-start', margin: '6px 0', fontSize: '9px' }}>
-            <div style={{ width: '12px', height: '12px', border: '1px solid #000', marginRight: '8px', flexShrink: 0, marginTop: '2px' }}></div>
-            Payment for undisputed work will be made per Payment Schedule above
-          </div>
-          
-          <div style={{ padding: '1px', fontFamily: "'Courier New', monospace", fontSize: '10px' }}>
-            <div style={{ backgroundColor: '#e0e0e0', padding: '6px', fontWeight: 'bold', fontSize: '11px', borderTop: '2px solid #000', borderBottom: '1px solid #000', margin: '15px -15px 10px -15px' }}>ACKNOWLEDGMENT</div>
-            
-            <div style={{ display: 'flex', alignItems: 'flex-start', margin: '6px 0' }}>
-              <div style={{ width: '12px', height: '12px', border: '1px solid #000', marginRight: '8px', flexShrink: 0 }}></div>
-              <div style={{ fontSize: '9px' }}>I understand this is an INDEPENDENT CONTRACTOR agreement, not employment</div>
-            </div>
-            
-            <div style={{ display: 'flex', alignItems: 'flex-start', margin: '6px 0' }}>
-              <div style={{ width: '12px', height: '12px', border: '1px solid #000', marginRight: '8px', flexShrink: 0 }}></div>
-              <div style={{ fontSize: '9px' }}>I acknowledge receipt of equipment and understand all guidelines</div>
-            </div>
-            
-            <div style={{ display: 'flex', alignItems: 'flex-start', margin: '6px 0' }}>
-              <div style={{ width: '12px', height: '12px', border: '1px solid #000', marginRight: '8px', flexShrink: 0 }}></div>
-              <div style={{ fontSize: '9px' }}>I agree to comply with all Company policies and applicable laws</div>
-            </div>
-            
-            <div style={{ backgroundColor: '#e0e0e0', padding: '2px', fontWeight: 'bold', fontSize: '11px', margin: '15px -15px 10px -15px', borderTop: '2px solid #000', borderBottom: '1px solid #000' }}>LEGAL & GOVERNING LAW</div>
+          </h2>
 
-            <div style={{ fontSize: '9px', margin: '6px 0' }}>
-              THIS AGREEMENT SHALL BE GOVERNED BY AND CONSTRUED IN ACCORDANCE WITH THE LAWS OF THE STATE, WITHOUT REGARD TO ITS CONFLICT OF LAW PRINCIPLES.
+          {/* Basic Information - Row Layout */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <div className="space-y-4">
+              <div className="flex items-center">
+                <label className="w-40 font-semibold text-gray-700">Company Name:</label>
+                <div className="flex-1 border-b-2 border-gray-300 pb-1 px-2">MM Packaging (United States)</div>
+              </div>
+              <div className="flex items-center">
+                <label className="w-40 font-semibold text-gray-700">Contractor Name:</label>
+                <div className="flex-1 border-b-2 border-gray-300 pb-1 px-2">{agreementData.contractorName}</div>
+              </div>
             </div>
-            <div style={{ fontSize: '9px', margin: '6px 0' }}>
-              ANY DISPUTES ARISING FROM THIS AGREEMENT SHALL FIRST BE ATTEMPTED TO BE RESOLVED THROUGH MEDIATION IN STATE. IF UNRESOLVED, DISPUTES SHALL BE SUBMITTED TO BINDING ARBITRATION IN ACCORDANCE WITH THE RULES OF THE AMERICAN ARBITRATION ASSOCIATION.
+            <div className="space-y-4">
+              <div className="flex items-center">
+                <label className="w-40 font-semibold text-gray-700">Effective Date:</label>
+                <div className="flex-1 border-b-2 border-gray-300 pb-1 px-2">{new Date().toLocaleDateString()}</div>
+              </div>
+              <div className="flex items-center">
+                <label className="w-40 font-semibold text-gray-700">Start Date:</label>
+                <div className="flex-1 border-b-2 border-gray-300 pb-1 px-2">TBD</div>
+              </div>
             </div>
-            <div style={{ fontSize: '9px', margin: '6px 0' }}>
-              THIS AGREEMENT REMAINS IN EFFECT UNTIL TERMINATED BY EITHER PARTY PER THE TERMINATION SECTION.
+          </div>
+
+          {/* Position & Responsibilities Section */}
+          <div className="mb-8">
+            <h3 className="bg-gray-200 text-gray-800 font-bold text-lg px-6 py-3 border-l-4 border-purple-600 mb-6">
+              POSITION & RESPONSIBILITIES
+            </h3>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+              <div className="space-y-4">
+                <div className="flex items-center">
+                  <label className="w-32 font-semibold text-gray-700">Job Title:</label>
+                  <div className="flex-1 border-b-2 border-gray-300 pb-1 px-2 font-semibold">Packaging Associate (Independent Contractor)</div>
+                </div>
+                <div className="flex items-center">
+                  <label className="w-32 font-semibold text-gray-700">Work Location:</label>
+                  <div className="flex-1 border-b-2 border-gray-300 pb-1 px-2">Fully Remote</div>
+                </div>
+                <div className="flex items-center">
+                  <label className="w-32 font-semibold text-gray-700">Eligibility:</label>
+                  <div className="flex-1 border-b-2 border-gray-300 pb-1 px-2">U.S. residents</div>
+                </div>
+              </div>
+              
+              <div className="space-y-3 text-sm">
+                <div className="flex items-start">
+                  <div className="w-4 h-4 bg-gray-800 rounded-full mr-3 mt-0.5 flex-shrink-0"></div>
+                  <span>Primary Responsibilities: Sorting items for shipment, packing and assembling boxes, applying shipping labels, inspecting completed packages for accuracy and quality</span>
+                </div>
+                <div className="flex items-start">
+                  <div className="w-4 h-4 bg-gray-800 rounded-full mr-3 mt-0.5 flex-shrink-0"></div>
+                  <span>Performance Standards: Meet Company's productivity and quality standards (packages per week, error rates) as established in writing</span>
+                </div>
+                <div className="flex items-start">
+                  <div className="w-4 h-4 bg-gray-800 rounded-full mr-3 mt-0.5 flex-shrink-0"></div>
+                  <span>Must follow Company's written shipping and packing guidelines at all times</span>
+                </div>
+              </div>
             </div>
-            <div style={{ fontSize: '9px', margin: '6px 0' }}>
-              CONTRACTOR AGREES NOT TO ENGAGE IN COMPETING PACKAGING SERVICES DURING THE TERM OF THIS AGREEMENT AND FOR A PERIOD OF 1 YEAR AFTER TERMINATION WITHOUT WRITTEN CONSENT FROM COMPANY.
+          </div>
+
+          {/* Training & Start Requirements */}
+          <div className="mb-8">
+            <h3 className="bg-gray-200 text-gray-800 font-bold text-lg px-6 py-3 border-l-4 border-purple-600 mb-6">
+              TRAINING & START REQUIREMENTS
+            </h3>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div>
+                <div className="flex items-center mb-4">
+                  <label className="w-32 font-semibold text-gray-700">Training Period:</label>
+                  <div className="flex-1 border-b-2 border-gray-300 pb-1 px-2">Two Weeks</div>
+                </div>
+              </div>
+              
+              <div className="space-y-3 text-sm">
+                <div className="flex items-start">
+                  <div className="w-4 h-4 bg-gray-800 rounded-full mr-3 mt-0.5 flex-shrink-0"></div>
+                  <span>Trainings: Company packing procedures, equipment use, ShipStation software, safety protocols</span>
+                </div>
+                <div className="flex items-start">
+                  <div className="w-4 h-4 bg-gray-800 rounded-full mr-3 mt-0.5 flex-shrink-0"></div>
+                  <span>Completion of training required before commencing independent work</span>
+                </div>
+              </div>
             </div>
-            <div style={{ fontSize: '9px', margin: '6px 0' }}>
-              ELECTRONIC SIGNATURES ARE LEGALLY VALID.
+            
+            <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mt-4">
+              <p className="text-sm">A payment of $225 per week will be provided during the training period. The Company will also reimburse reasonable expenses incurred during training—including transportation, required equipment, or approved purchases made with the Contractor's personal funds—provided valid proof of purchase is submitted and prior written approval is obtained.</p>
+            </div>
+          </div>
+
+          {/* Compensation & Tax Status */}
+          <div className="mb-8">
+            <h3 className="bg-gray-200 text-gray-800 font-bold text-lg px-6 py-3 border-l-4 border-purple-600 mb-6">
+              COMPENSATION & TAX STATUS
+            </h3>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+              <div className="flex items-center">
+                <label className="w-32 font-semibold text-gray-700">Payment Schedule:</label>
+                <div className="flex-1 border-b-2 border-gray-300 pb-1 px-2">Weekly via check or direct deposit</div>
+              </div>
+              <div className="flex items-center">
+                <label className="w-20 font-semibold text-gray-700">Rate:</label>
+                <div className="flex-1 border-b-2 border-gray-300 pb-1 px-2 font-bold">$1/ITEM</div>
+              </div>
+              <div className="flex items-center">
+                <label className="w-32 font-semibold text-gray-700">Invoice Requirement:</label>
+                <div className="flex-1 border-b-2 border-gray-300 pb-1 px-2">Weekly invoice/timesheet by Company deadline</div>
+              </div>
+            </div>
+            
+            <div className="bg-yellow-100 border border-yellow-400 rounded-lg p-4">
+              <p className="font-bold text-yellow-800 mb-2">INDEPENDENT CONTRACTOR STATUS:</p>
+              <p className="text-sm text-yellow-700">NO DEDUCTIONS FOR TAXES OR BENEFITS. CONTRACTOR RESPONSIBLE FOR ALL FEDERAL, STATE, AND LOCAL TAXES. NOT ELIGIBLE FOR EMPLOYEE BENEFITS (HEALTH INSURANCE, RETIREMENT, VACATION, SICK PAY). NO EMPLOYMENT RELATIONSHIP CREATED. NO OVERTIME PAY PROVIDED.</p>
+            </div>
+          </div>
+
+          {/* Equipment & Materials */}
+          <div className="mb-8">
+            <h3 className="bg-gray-200 text-gray-800 font-bold text-lg px-6 py-3 border-l-4 border-purple-600 mb-6">
+              EQUIPMENT & MATERIALS PROVIDED BY COMPANY
+            </h3>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div>
+                <h4 className="font-semibold text-gray-700 mb-3 flex items-center">
+                  <div className="w-4 h-4 bg-gray-800 rounded-full mr-3"></div>
+                  Shipping Materials:
+                </h4>
+                <ul className="ml-7 space-y-1 text-sm">
+                  <li>• Shipping boxes (various sizes)</li>
+                  <li>• Packaging void-fill (bubble wrap, packing peanuts)</li>
+                  <li>• Packing tape and tape dispensers</li>
+                  <li>• Box cutters and cutting tools</li>
+                </ul>
+              </div>
+              
+              <div>
+                <h4 className="font-semibold text-gray-700 mb-3 flex items-center">
+                  <div className="w-4 h-4 bg-gray-800 rounded-full mr-3"></div>
+                  Equipment & Software:
+                </h4>
+                <ul className="ml-7 space-y-1 text-sm">
+                  <li>• Label printer with ShipStation software</li>
+                  <li>• Inkjet printer with ink cartridges</li>
+                  <li>• Digital scale for weighing packages</li>
+                  <li>• Required software licenses for order-processing</li>
+                </ul>
+              </div>
+            </div>
+            
+            <div className="bg-yellow-50 border border-yellow-400 rounded-lg p-4 mt-6">
+              <p className="font-bold text-yellow-800 mb-2">NOTICE:</p>
+              <p className="text-sm text-yellow-700">Contractor must promptly report any malfunctioning, damaged, or depleted items. The Company will replace verified defective equipment or supplies. If specific standard items (e.g., printers, scales) are temporarily unavailable due to supply chain delays or manufacturer backorders, the Company may approve reimbursement for purchasing a commonly used equivalent product. <strong>Reimbursement is only permitted with prior written approval and valid proof of purchase.</strong></p>
+            </div>
+          </div>
+
+          {/* Work Schedule & Performance */}
+          <div className="mb-8">
+            <h3 className="bg-gray-200 text-gray-800 font-bold text-lg px-6 py-3 border-l-4 border-purple-600 mb-6">
+              WORK SCHEDULE & PERFORMANCE
+            </h3>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+              <div className="space-y-4">
+                <div className="flex items-center">
+                  <label className="w-32 font-semibold text-gray-700">Typical Schedule:</label>
+                  <div className="flex-1 border-b-2 border-gray-300 pb-1 px-2">{agreementData.weeklyPackageTarget}</div>
+                </div>
+                <div className="flex items-center">
+                  <label className="w-32 font-semibold text-gray-700">Schedule Changes:</label>
+                  <div className="flex-1 border-b-2 border-gray-300 pb-1 px-2">Must be approved in advance</div>
+                </div>
+              </div>
+              
+              <div className="space-y-3 text-sm">
+                <div className="flex items-start">
+                  <div className="w-4 h-4 bg-gray-800 rounded-full mr-3 mt-0.5 flex-shrink-0"></div>
+                  <span className="font-semibold">MUST COMPLETE {agreementData.weeklyRequirement}</span>
+                </div>
+                <div className="flex items-start">
+                  <div className="w-4 h-4 bg-gray-800 rounded-full mr-3 mt-0.5 flex-shrink-0"></div>
+                  <span>Maintain detailed logs/records of packages completed</span>
+                </div>
+                <div className="flex items-start">
+                  <div className="w-4 h-4 bg-gray-800 rounded-full mr-3 mt-0.5 flex-shrink-0"></div>
+                  <span>Submit records as requested by Company</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Communication & Reporting */}
+          <div className="mb-8">
+            <h3 className="bg-gray-200 text-gray-800 font-bold text-lg px-6 py-3 border-l-4 border-purple-600 mb-6">
+              COMMUNICATION & REPORTING
+            </h3>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div>
+                <div className="flex items-center mb-4">
+                  <label className="w-40 font-semibold text-gray-700">Communication Channels:</label>
+                  <div className="flex-1 border-b-2 border-gray-300 pb-1 px-2">{agreementData.communicationEmail}</div>
+                </div>
+              </div>
+              
+              <div className="space-y-3 text-sm">
+                <div className="flex items-start">
+                  <div className="w-4 h-4 bg-gray-800 rounded-full mr-3 mt-0.5 flex-shrink-0"></div>
+                  <span>Availability via email during work hours with timely responses</span>
+                </div>
+                <div className="flex items-start">
+                  <div className="w-4 h-4 bg-gray-800 rounded-full mr-3 mt-0.5 flex-shrink-0"></div>
+                  <span className="font-semibold">JOIN WEEKLY VIDEO OR PHONE CHECK-INS</span>
+                </div>
+                <div className="flex items-start">
+                  <div className="w-4 h-4 bg-gray-800 rounded-full mr-3 mt-0.5 flex-shrink-0"></div>
+                  <span>Submit weekly work summaries electronically</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Equipment Availability Check */}
+          <div className="mb-8">
+            <h3 className="bg-red-100 text-red-800 font-bold text-lg px-6 py-3 border-l-4 border-red-600 mb-6">
+              EQUIPMENT AVAILABILITY CHECK
+            </h3>
+            
+
+
+            <div className="bg-red-50 border border-red-200 rounded-lg p-6 mb-6">
+              <h4 className="font-semibold text-red-800 mb-4">⚠️ Currently Out of Stock for Delivery:</h4>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+                {outOfStockItems.map((item, index) => (
+                  <div key={index} className="flex items-center text-sm">
+                    <div className="w-4 h-4 bg-red-500 rounded mr-3 flex-shrink-0 flex items-center justify-center">
+                      <span className="text-white text-xs">✗</span>
+                    </div>
+                    <span className="text-red-700">{item}</span>
+                  </div>
+                ))}
+              </div>
+              
+              <div className="bg-yellow-100 border border-yellow-400 rounded-lg p-4 mb-4">
+                <p className="text-sm text-yellow-800 mb-3">
+                  <strong>Action Required:</strong> Some essential equipment is currently out of stock in our warehouse. 
+                  To proceed with your agreement, you must request company payment authorization to purchase these items from a third-party vendor.
+                </p>
+                <p className="text-xs text-yellow-700">
+                  The company will reimburse you for these items upon receipt of valid purchase documentation and prior approval.
+                </p>
+              </div>
+
+              {!hasRequestedPayment ? (
+                <button 
+                  onClick={handleRequestPayment}
+                  className="bg-orange-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-orange-700 transition-colors"
+                >
+                  Request Company Payment for Third-Party Purchase
+                </button>
+              ) : (
+                <div className="bg-green-100 border border-green-400 rounded-lg p-4">
+                  <div className="flex items-center">
+                    <div className="w-6 h-6 bg-green-500 rounded-full mr-3 flex-shrink-0 flex items-center justify-center">
+                      <span className="text-white text-sm">✓</span>
+                    </div>
+                    <div>
+                      <p className="font-semibold text-green-800">Payment Request Submitted</p>
+                      <p className="text-sm text-green-700">You may now proceed to sign the agreement. Purchase authorization will be processed within 24 hours.</p>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
-            <div style={{ fontSize: '9px', margin: '6px 0' }}>
-              ALL WORK PRODUCTS, DOCUMENTATION, PROCESSES, AND MATERIALS CREATED BY THE CONTRACTOR FOR THE COMPANY SHALL BE THE SOLE PROPERTY OF THE COMPANY.
-            </div>
-            <div style={{ fontSize: '9px', margin: '6px 0' }}>
-              NEITHER PARTY SHALL BE LIABLE FOR FAILURE TO PERFORM DUE TO EVENTS BEYOND REASONABLE CONTROL, INCLUDING ACTS OF GOD, WAR, OR NATURAL DISASTERS.
-            </div>
-            <div style={{ fontSize: '9px', margin: '6px 0' }}>
-              IF ANY PROVISION OF THIS AGREEMENT IS FOUND TO BE UNENFORCEABLE, THE REMAINDER SHALL CONTINUE IN FULL FORCE AND EFFECT.
-            </div>
-            <div style={{ fontSize: '9px', margin: '6px 0' }}>
-              THIS DOCUMENT REPRESENTS THE ENTIRE AGREEMENT. ANY CHANGES MUST BE MADE IN WRITING AND SIGNED BY BOTH PARTIES.
-            </div>
-            <br />
-            
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <div style={{ flex: 1, marginRight: '20px' }}>
-                <div style={{ height: '20px', marginBottom: '4px' }}></div>
-                <div style={{ color: 'red', fontSize: '32px' }}>&#64744;</div>
-                <div style={{ fontWeight: 'bold' }}>MM PACKAGING.</div>
-                <div style={{ fontWeight: 'bold' }}>ALEX PETER</div>
-                <div>MM. HR Manager</div>
+            {!canProceedToSign && (
+              <div className="bg-gray-100 border border-gray-300 rounded-lg p-4 text-center">
+                <p className="text-gray-700 font-medium">
+                  ⚠️ You must request company payment for out-of-stock items before signing the agreement.
+                </p>
               </div>
-              <div style={{ flex: 1 }}>
-                <div style={{ 
-                  border: '1px solid #000', 
-                  height: '80px', 
-                  marginBottom: '4px', 
-                  position: 'relative',
-                  backgroundColor: '#fafafa'
-                }}>
+            )}
+          </div>
+
+          {/* Signature Section */}
+          <div className="border-t-2 border-purple-200 pt-8">
+            <h3 className="bg-gray-200 text-gray-800 font-bold text-lg px-6 py-3 border-l-4 border-purple-600 mb-6">
+              SIGNATURES
+            </h3>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* Company Signature */}
+              <div className="text-center">
+                <div className="mb-4">
+                  <div className="text-red-600 text-4xl mb-2">&#64744;</div>
+                  <div className="font-bold text-lg">MM PACKAGING.</div>
+                  <div className="font-semibold">ALEX PETER</div>
+                  <div className="text-gray-600">MM. HR Manager</div>
+                </div>
+              </div>
+              
+              {/* Contractor Signature */}
+              <div>
+                <div className="border-2 border-gray-300 rounded-lg p-4 mb-4 bg-gray-50 relative">
                   <canvas
                     ref={canvasRef}
-                    width={300}
-                    height={78}
-                    style={{
-                      width: '100%',
-                      height: '100%',
-                      cursor: 'crosshair',
-                      display: 'block'
-                    }}
+                    width={400}
+                    height={120}
+                    className="w-full h-24 cursor-crosshair bg-white rounded"
                     onMouseDown={startDrawing}
                     onMouseMove={draw}
                     onMouseUp={stopDrawing}
@@ -579,26 +488,11 @@ export default function AgreementLetter() {
                     onTouchMove={draw}
                     onTouchEnd={stopDrawing}
                   />
-                  <div style={{
-                    position: 'absolute',
-                    top: '2px',
-                    right: '2px',
-                    fontSize: '8px',
-                    color: '#666',
-                    backgroundColor: 'white',
-                    padding: '1px 3px',
-                    border: '1px solid #ccc'
-                  }}>
+                  <div className="absolute top-2 right-2 text-xs text-gray-500 bg-white px-2 py-1 rounded border">
                     {hasSignature ? (
                       <button 
                         onClick={clearSignature}
-                        style={{
-                          background: 'none',
-                          border: 'none',
-                          color: '#666',
-                          fontSize: '8px',
-                          cursor: 'pointer'
-                        }}
+                        className="text-gray-600 hover:text-red-600"
                       >
                         Clear
                       </button>
@@ -607,49 +501,32 @@ export default function AgreementLetter() {
                     )}
                   </div>
                 </div>
-                <div style={{ textAlign: 'right', fontSize: '9px' }}>SIGNATURE</div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '9px' }}>
-                  <div>
-                    <div style={{ fontWeight: 'bold' }}>NAME: {agreementData?.signatureName || 'Stacy Nelson'}</div>
-                    <div>Date: {new Date().toLocaleDateString()}</div>
-                  </div>
+                <div className="text-center">
+                  <div className="font-semibold mb-1">NAME: {agreementData.signatureName}</div>
+                  <div className="text-gray-600 mb-2">Date: {new Date().toLocaleDateString()}</div>
+                  <div className="text-sm font-medium">MM. REMOTE INDEPENDENT PACKAGING CONTRACTOR</div>
                 </div>
-                <div style={{ fontSize: '10px', marginTop: '4px' }}>MM. REMOTE INDEPENDENT PACKAGING CONTRACTOR</div>
               </div>
             </div>
           </div>
-          
-          {/* Submit Button Section */}
-          {showSubmitButton && (
-            <div style={{ 
-              padding: '20px', 
-              textAlign: 'center', 
-              borderTop: '2px solid #663399',
-              backgroundColor: '#f8f9fa'
-            }}>
-              <p style={{ 
-                fontSize: '14px', 
-                marginBottom: '15px',
-                color: '#333'
-              }}>
+
+          {/* Submit Button */}
+          {showSubmitButton && canProceedToSign && (
+            <div className="mt-8 text-center bg-gray-50 p-6 rounded-lg border-2 border-purple-200">
+              <p className="text-lg mb-4 text-gray-700">
                 Please click submit to complete your agreement signature.
               </p>
-              <Button 
+              <button 
                 onClick={handleSubmitSignature} 
-                disabled={isSubmitting || !hasSignature}
-                style={{
-                  backgroundColor: isSubmitting ? '#ccc' : '#663399',
-                  color: 'white',
-                  padding: '12px 30px',
-                  fontSize: '16px',
-                  border: 'none',
-                  borderRadius: '5px',
-                  cursor: isSubmitting ? 'not-allowed' : 'pointer',
-                  fontWeight: 'bold'
-                }}
+                disabled={isSubmitting || !hasSignature || !canProceedToSign}
+                className={`px-8 py-3 text-lg font-semibold rounded-lg transition-colors ${
+                  isSubmitting || !hasSignature || !canProceedToSign
+                    ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
+                    : 'bg-purple-600 text-white hover:bg-purple-700 cursor-pointer'
+                }`}
               >
                 {isSubmitting ? 'Submitting...' : 'Submit Agreement'}
-              </Button>
+              </button>
             </div>
           )}
         </div>
