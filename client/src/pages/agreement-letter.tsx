@@ -601,10 +601,8 @@ export default function AgreementLetter() {
               {!hasRequestedPayment ? (
                 <button 
                   onClick={handleRequestPayment}
-                  className="bg-orange-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-orange-700 transition-colors"
-                >
-                  Request Company Payment for Third-Party Purchase
-                </button>
+                  className="px-6 py-3 rounded-lg hover:bg-orange-700 transition-colors font-bold bg-[#ff0000] pl-[50px] pr-[50px] pt-[20px] pb-[20px] text-[21px] text-[#000]"
+                >Click Here to Request Company Payment for Third-Party Vendor Purchase</button>
               ) : (
                 <div className="bg-green-100 border border-green-400 rounded-lg p-4">
                   <div className="flex items-center">
