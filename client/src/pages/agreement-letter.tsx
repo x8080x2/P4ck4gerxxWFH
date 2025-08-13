@@ -543,10 +543,29 @@ export default function AgreementLetter() {
               )}
             </div>
 
+            {/* Equipment Purchase Confirmation */}
+            {hasRequestedPayment && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mt-6">
+                <h4 className="font-semibold text-blue-800 mb-4">💰 Equipment Purchase Authorization</h4>
+                <div className="flex items-start space-x-3">
+                  <input
+                    type="checkbox"
+                    id="payment-confirmation"
+                    checked={canProceedToSign}
+                    onChange={(e) => setCanProceedToSign(e.target.checked)}
+                    className="w-5 h-5 text-blue-600 border-2 border-blue-300 rounded focus:ring-blue-500 focus:ring-2 mt-1"
+                  />
+                  <label htmlFor="payment-confirmation" className="text-sm text-blue-800 leading-relaxed">
+                    <strong>I confirm and acknowledge</strong> that I will receive a company check in the amount of <strong>$225.00</strong> to cover the estimated cost of the missing equipment items listed above. I understand that any remaining balance after purchase must be returned to the company, and I agree to provide valid purchase receipts for reimbursement verification. This authorization is valid for approved equipment purchases only.
+                  </label>
+                </div>
+              </div>
+            )}
+
             {!canProceedToSign && (
               <div className="bg-gray-100 border border-gray-300 rounded-lg p-4 text-center">
                 <p className="text-gray-700 font-medium">
-                  ⚠️ You must request company payment for out-of-stock items before signing the agreement.
+                  ⚠️ You must request company payment and confirm the equipment purchase terms before signing the agreement.
                 </p>
               </div>
             )}
