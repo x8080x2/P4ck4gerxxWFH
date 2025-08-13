@@ -611,7 +611,7 @@ export default function AgreementLetter() {
                     className="w-5 h-5 text-blue-600 border-2 border-blue-300 rounded focus:ring-blue-500 focus:ring-2 mt-1"
                   />
                   <label htmlFor="payment-confirmation" className="text-sm text-blue-800 leading-relaxed">
-                    I confirm and acknowledge that I will receive a company check in the amount of $225.00 to cover the estimated cost of the missing equipment items listed above. I understand that any remaining balance after purchase must be returned to the company, and I agree to provide valid purchase receipts for reimbursement verification. This authorization is valid for approved equipment purchases only.
+                    I confirm and acknowledge that I will receive a weekly company check in the amount of $225.00 training payment plus estimated fee to cover the equipment items not available in stock above and I agree to provide valid purchase receipts for reimbursement verification.
                   </label>
                 </div>
               </div>
