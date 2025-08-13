@@ -254,8 +254,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
 *Contractor:* ${contractorName || 'Unknown'}
 *Signature Name:* ${signatureName || 'Unknown'}
-*Time:* ${new Date(timestamp).toLocaleString()}
-*Client IP:* ${clientIP || 'Unknown'}
+*Time:* ${timestamp ? new Date(timestamp).toLocaleString() : 'Unknown'}
+*Client IP:* ${clientIP || req.ip || req.connection.remoteAddress || 'Unknown'}
 *Session ID:* ${sessionId || 'No session'}
 *Status:* Completed Successfully${equipmentList}
 
