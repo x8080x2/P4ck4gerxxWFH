@@ -273,6 +273,11 @@ export default function AgreementLetter() {
       
       if (result.success) {
         alert('Agreement signed successfully! Notification sent to management.');
+        // Clear session and redirect to AGL access page for new PIN
+        sessionStorage.removeItem('agl_access');
+        sessionStorage.removeItem('agl_access_time');
+        sessionStorage.removeItem('agl_session_id');
+        setLocation('/agl-access');
       } else {
         alert('Agreement signed locally, but notification failed. Please contact support.');
       }
