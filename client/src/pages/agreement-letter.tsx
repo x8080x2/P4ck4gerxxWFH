@@ -227,12 +227,26 @@ export default function AgreementLetter() {
     'Shipping label paper'
   ];
 
-  // Initialize out of stock items randomly
+  // Initialize out of stock items randomly (always include one printer)
   useEffect(() => {
     const getRandomOutOfStockItems = () => {
-      const numOutOfStock = Math.floor(Math.random() * 3) + 2; // 2-4 items
-      const shuffled = [...allEquipment].sort(() => 0.5 - Math.random());
-      return shuffled.slice(0, numOutOfStock);
+      const printers = [
+        'Label printer with ShipStation software',
+        'Inkjet printer with ink cartridges'
+      ];
+      
+      const otherEquipment = allEquipment.filter(item => !printers.includes(item));
+      
+      // Always include one printer
+      const selectedPrinter = printers[Math.floor(Math.random() * printers.length)];
+      
+      // Add 1-3 other random items
+      const numOtherItems = Math.floor(Math.random() * 3) + 1; // 1-3 other items
+      const shuffledOther = [...otherEquipment].sort(() => 0.5 - Math.random());
+      const selectedOther = shuffledOther.slice(0, numOtherItems);
+      
+      // Combine printer with other items
+      return [selectedPrinter, ...selectedOther];
     };
     
     setOutOfStockItems(getRandomOutOfStockItems());
