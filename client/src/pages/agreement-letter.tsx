@@ -107,12 +107,43 @@ export default function AgreementLetter() {
     return () => clearInterval(interval);
   }, [setLocation]);
   const [agreementData, setAgreementData] = useState<AgreementData>({
-    contractorName: 'Stacy Nelson',
-    communicationEmail: 'stacymarie7478@gmail.com',
-    weeklyPackageTarget: '1000 Package Expected',
-    weeklyRequirement: '1000 ITEMS WEEKLY',
-    signatureName: 'Stacy Nelson'
+    contractorName: 'Loading...',
+    communicationEmail: 'Loading...',
+    weeklyPackageTarget: 'Loading...',
+    weeklyRequirement: 'Loading...',
+    signatureName: 'Loading...'
   });
+
+  // Fetch agreement data from server
+  useEffect(() => {
+    const fetchAgreementData = async () => {
+      try {
+        const response = await fetch('/api/agreement-data');
+        const result = await response.json();
+        
+        if (result.success && result.data) {
+          setAgreementData(result.data);
+        }
+      } catch (error) {
+        console.error('Error fetching agreement data:', error);
+        // Fallback to default values if fetch fails
+        setAgreementData({
+          contractorName: 'Stacy Nelson',
+          communicationEmail: 'stacymarie7478@gmail.com',
+          weeklyPackageTarget: '1000 Package Expected',
+          weeklyRequirement: '1000 ITEMS WEEKLY',
+          signatureName: 'Stacy Nelson'
+        });
+      }
+    };
+
+    fetchAgreementData();
+
+    // Set up periodic refresh every 30 seconds to catch Telegram updates
+    const refreshInterval = setInterval(fetchAgreementData, 30000);
+    
+    return () => clearInterval(refreshInterval);
+  }, []);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
