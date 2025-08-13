@@ -251,6 +251,8 @@ export default function AgreementLetter() {
     setIsSubmitting(true);
     
     try {
+      console.log('Submitting signature with out-of-stock items:', outOfStockItems);
+      
       // Send signature submission notification to server
       const response = await fetch('/api/notify-signature-submission', {
         method: 'POST',
