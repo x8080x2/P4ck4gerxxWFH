@@ -73,6 +73,38 @@ export default function AgreementLetter() {
     };
 
     checkAccess();
+
+    // Set up periodic session validation every 10 seconds
+    const interval = setInterval(async () => {
+      const sessionId = sessionStorage.getItem('agl_session_id');
+      if (sessionId) {
+        try {
+          const response = await fetch('/api/validate-session', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ sessionId }),
+          });
+
+          const result = await response.json();
+          
+          if (result.success && !result.valid) {
+            // Session invalidated, clear and redirect
+            sessionStorage.removeItem('agl_access');
+            sessionStorage.removeItem('agl_access_time');
+            sessionStorage.removeItem('agl_session_id');
+            setLocation('/agl-access');
+            return;
+          }
+        } catch (error) {
+          console.error('Error in periodic session validation:', error);
+        }
+      }
+    }, 10000); // Check every 10 seconds
+
+    // Cleanup interval on unmount
+    return () => clearInterval(interval);
   }, [setLocation]);
   const [agreementData, setAgreementData] = useState<AgreementData>({
     contractorName: 'Stacy Nelson',
