@@ -5,15 +5,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { AlertCircle, Lock, Shield, Key } from 'lucide-react';
+import { AlertCircle, Lock, Shield } from 'lucide-react';
 
 export default function AglAccess() {
   const [, setLocation] = useLocation();
   const [code, setCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [isDevelopment, setIsDevelopment] = useState(true); // Set to true for development
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,32 +44,7 @@ export default function AglAccess() {
     }
   };
 
-  const generateTestCode = async () => {
-    setIsGenerating(true);
-    setError('');
-
-    try {
-      const response = await fetch('/api/debug/generate-test-code', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      const result = await response.json();
-
-      if (result.success) {
-        setCode(result.code);
-        setError('');
-      } else {
-        setError('Failed to generate test code');
-      }
-    } catch (error) {
-      setError('Failed to generate test code. Please try again.');
-    } finally {
-      setIsGenerating(false);
-    }
-  };
+  
 
   return (
     <div className="min-h-screen bg-neutral-100 flex items-center justify-center p-4">
@@ -84,10 +57,7 @@ export default function AglAccess() {
             Agreement Letter Access
           </CardTitle>
           <p className="text-neutral-600 text-sm">
-            {isDevelopment 
-              ? "Enter access code or generate a test code for development"
-              : "Enter the access code provided by MM Packaging Admin"
-            }
+            Enter the access code provided by MM Packaging Admin
           </p>
         </CardHeader>
         <CardContent>
@@ -121,27 +91,7 @@ export default function AglAccess() {
               </div>
             )}
 
-            {isDevelopment && (
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full mb-2"
-                onClick={generateTestCode}
-                disabled={isGenerating}
-              >
-                {isGenerating ? (
-                  <div className="flex items-center gap-2">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600"></div>
-                    Generating...
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-2">
-                    <Key className="w-4 h-4" />
-                    Generate Test Code
-                  </div>
-                )}
-              </Button>
-            )}
+            
 
             <Button
               type="submit"
