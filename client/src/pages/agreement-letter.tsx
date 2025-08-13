@@ -601,7 +601,7 @@ export default function AgreementLetter() {
             {/* Equipment Purchase Confirmation */}
             {hasRequestedPayment && (
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mt-6">
-                <h4 className="font-semibold text-blue-800 mb-4">💰 Equipment Purchase Authorization</h4>
+                <h4 className="font-semibold text-blue-800 mb-4">Equipment Purchase Authorization</h4>
                 <div className="flex items-start space-x-3">
                   <input
                     type="checkbox"
