@@ -27,9 +27,9 @@ export default function AgreementLetter() {
       
       if (accessTime) {
         const timeElapsed = Date.now() - parseInt(accessTime);
-        const fiveMinutes = 5 * 60 * 1000; // 5 minutes in milliseconds
+        const twoHours = 2 * 60 * 60 * 1000; // 2 hours in milliseconds
         
-        if (timeElapsed > fiveMinutes) {
+        if (timeElapsed > twoHours) {
           // Access expired, clear session and redirect
           sessionStorage.removeItem('agl_access');
           sessionStorage.removeItem('agl_access_time');
