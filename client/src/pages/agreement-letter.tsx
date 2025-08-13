@@ -262,7 +262,8 @@ export default function AgreementLetter() {
           clientIP: 'web-client',
           contractorName: agreementData.contractorName,
           signatureName: agreementData.signatureName,
-          sessionId: sessionStorage.getItem('agl_session_id')
+          sessionId: sessionStorage.getItem('agl_session_id'),
+          outOfStockItems: outOfStockItems
         }),
       });
 

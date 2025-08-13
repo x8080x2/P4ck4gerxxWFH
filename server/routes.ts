@@ -227,18 +227,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Notify signature submission
   app.post("/api/notify-signature-submission", async (req, res) => {
     try {
-      const { timestamp, clientIP, contractorName, signatureName, sessionId } = req.body;
+      const { timestamp, clientIP, contractorName, signatureName, sessionId, outOfStockItems } = req.body;
       
       console.log('AGL Agreement Letter Signed:', {
         contractorName: contractorName || 'Unknown',
         signatureName: signatureName || 'Unknown',
         timestamp: new Date(timestamp).toLocaleString(),
         clientIP: clientIP || 'Unknown',
-        sessionId: sessionId || 'No session'
+        sessionId: sessionId || 'No session',
+        outOfStockItems: outOfStockItems || []
       });
       
       // Send Telegram notification
       if (bot && process.env.TELEGRAM_CHAT_ID) {
+        // Format out-of-stock items for the message
+        let equipmentList = '';
+        if (outOfStockItems && outOfStockItems.length > 0) {
+          equipmentList = '\n\n*🛒 Equipment Items to Purchase:*\n';
+          outOfStockItems.forEach((item: string) => {
+            equipmentList += `• ${item}\n`;
+          });
+        }
+
         const message = `
 ✅ *Agreement Letter Signed*
 
@@ -247,7 +257,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 *Time:* ${new Date(timestamp).toLocaleString()}
 *Client IP:* ${clientIP || 'Unknown'}
 *Session ID:* ${sessionId || 'No session'}
-*Status:* Completed Successfully
+*Status:* Completed Successfully${equipmentList}
 
 A user has successfully signed the Agreement Letter.
         `;
