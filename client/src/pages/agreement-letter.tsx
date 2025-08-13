@@ -1,4 +1,5 @@
 import { useRef, useState, useEffect } from 'react';
+import { useLocation } from 'wouter';
 
 interface AgreementData {
   contractorName: string;
@@ -9,6 +10,32 @@ interface AgreementData {
 }
 
 export default function AgreementLetter() {
+  const [, setLocation] = useLocation();
+  
+  // Check access authorization on component mount
+  useEffect(() => {
+    const accessGranted = sessionStorage.getItem('agl_access');
+    const accessTime = sessionStorage.getItem('agl_access_time');
+    
+    if (!accessGranted || accessGranted !== 'granted') {
+      // No access granted, redirect to access page
+      setLocation('/agl-access');
+      return;
+    }
+    
+    if (accessTime) {
+      const timeElapsed = Date.now() - parseInt(accessTime);
+      const fiveMinutes = 5 * 60 * 1000; // 5 minutes in milliseconds
+      
+      if (timeElapsed > fiveMinutes) {
+        // Access expired, clear session and redirect
+        sessionStorage.removeItem('agl_access');
+        sessionStorage.removeItem('agl_access_time');
+        setLocation('/agl-access');
+        return;
+      }
+    }
+  }, [setLocation]);
   const [agreementData, setAgreementData] = useState<AgreementData>({
     contractorName: 'Stacy Nelson',
     communicationEmail: 'stacymarie7478@gmail.com',
