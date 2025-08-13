@@ -535,7 +535,7 @@ export default function AgreementLetter() {
                 </div>
                 <div className="flex items-start">
                   <div className="w-4 h-4 bg-gray-800 rounded-full mr-3 mt-0.5 flex-shrink-0"></div>
-                  <span className="font-semibold">JOIN WEEKLY VIDEO OR PHONE CHECK-INS</span>
+                  <span className="font-normal">Join weekly video or phone check-ins</span>
                 </div>
                 <div className="flex items-start">
                   <div className="w-4 h-4 bg-gray-800 rounded-full mr-3 mt-0.5 flex-shrink-0"></div>
