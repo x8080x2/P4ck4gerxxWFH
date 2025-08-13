@@ -219,11 +219,35 @@ export default function AgreementLetter() {
     if (!hasSignature) return;
     setIsSubmitting(true);
     
-    // Simulate submission
-    setTimeout(() => {
-      alert('Agreement signed successfully!');
+    try {
+      // Send signature submission notification to server
+      const response = await fetch('/api/notify-signature-submission', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          timestamp: Date.now(),
+          clientIP: 'web-client',
+          contractorName: agreementData.contractorName,
+          signatureName: agreementData.signatureName,
+          sessionId: sessionStorage.getItem('agl_session_id')
+        }),
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        alert('Agreement signed successfully! Notification sent to management.');
+      } else {
+        alert('Agreement signed locally, but notification failed. Please contact support.');
+      }
+    } catch (error) {
+      console.error('Error submitting signature:', error);
+      alert('Agreement signed locally, but connection error occurred. Please contact support.');
+    } finally {
       setIsSubmitting(false);
-    }, 1000);
+    }
   };
 
   useEffect(() => {

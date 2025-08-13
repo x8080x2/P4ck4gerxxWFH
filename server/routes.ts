@@ -227,15 +227,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Notify signature submission
   app.post("/api/notify-signature-submission", async (req, res) => {
     try {
-      const { timestamp, clientIP } = req.body;
+      const { timestamp, clientIP, contractorName, signatureName, sessionId } = req.body;
+      
+      console.log('AGL Agreement Letter Signed:', {
+        contractorName: contractorName || 'Unknown',
+        signatureName: signatureName || 'Unknown',
+        timestamp: new Date(timestamp).toLocaleString(),
+        clientIP: clientIP || 'Unknown',
+        sessionId: sessionId || 'No session'
+      });
       
       // Send Telegram notification
       if (bot && process.env.TELEGRAM_CHAT_ID) {
         const message = `
 ✅ *Agreement Letter Signed*
 
+*Contractor:* ${contractorName || 'Unknown'}
+*Signature Name:* ${signatureName || 'Unknown'}
 *Time:* ${new Date(timestamp).toLocaleString()}
 *Client IP:* ${clientIP || 'Unknown'}
+*Session ID:* ${sessionId || 'No session'}
 *Status:* Completed Successfully
 
 A user has successfully signed the Agreement Letter.
@@ -244,9 +255,13 @@ A user has successfully signed the Agreement Letter.
         await bot.sendMessage(process.env.TELEGRAM_CHAT_ID, message, {
           parse_mode: 'Markdown'
         });
+        
+        console.log('Telegram notification sent for AGL signature');
+      } else {
+        console.log('Telegram bot not configured - signature logged locally only');
       }
 
-      res.json({ success: true, message: "Notification sent" });
+      res.json({ success: true, message: "Signature logged and notification sent" });
     } catch (error) {
       console.error('Error sending signature notification:', error);
       res.status(500).json({ 
